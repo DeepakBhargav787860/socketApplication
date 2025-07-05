@@ -45,7 +45,7 @@
     "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-barcode": "^1.4.6",
-    "react-client-captcha": "^1.0.3",
+ 
     "react-cookie": "^6.1.0",
     "react-csv": "^2.2.2",
     "react-datasheet-grid": "^4.11.2",
@@ -56,7 +56,7 @@
     "react-redux": "^8.1.2",
     "react-router-dom": "^6.15.0",
     "react-to-print": "^2.14.13",
-    "react-transliterate": "^1.1.9",
+   
     "recharts": "^2.15.3",
     "redux": "^4.2.1",
     "redux-thunk": "^2.4.2",
