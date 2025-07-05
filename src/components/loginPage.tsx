@@ -176,7 +176,7 @@ const LoginPage = () => {
               size="md"
             />
 
-            <SimpleGrid cols={2}>
+            <SimpleGrid cols={2} mt={5}>
               <Button
                 loading={isLoginLoading}
                 type="submit"
