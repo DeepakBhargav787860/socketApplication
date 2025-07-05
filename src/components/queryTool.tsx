@@ -43,7 +43,7 @@ const QueryTool = () => {
       <Box w="100%">
         <Center mb="md">
           <Title order={2} c="pink.7">
-            💌 Shayari for Anjali
+            💌  for my Best Half 🌸
           </Title>
         </Center>
         <Stack spacing="md" align="center">
