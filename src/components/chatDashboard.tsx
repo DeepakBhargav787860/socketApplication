@@ -5,14 +5,24 @@ import {
   Text,
   Stack,
   useMantineTheme,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
 import {
   IconMessage,
   IconSend,
   IconInbox,
   IconUserPlus,
+  IconHelpCircle,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { keyframes } from "@emotion/react";
+
+const blink = keyframes`
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+`;
 
 const ChatDashboard = () => {
   const theme = useMantineTheme();
@@ -50,7 +60,7 @@ const ChatDashboard = () => {
   ];
 
   return (
-    <Box p="md">
+    <Box p="md" pos="relative">
       <Title order={2} mb="md" align="center" c="dark">
         Chat Dashboard
       </Title>
@@ -84,6 +94,27 @@ const ChatDashboard = () => {
           </Grid.Col>
         ))}
       </Grid>
+
+      {/* Floating Query Button */}
+      <Tooltip label="Have a question? Open Query Tool!" position="left" withArrow>
+        <ActionIcon
+          size="xl"
+          radius="xl"
+          color="violet"
+          variant="filled"
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            animation: `${blink} 1.5s infinite`,
+            zIndex: 999,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          }}
+          onClick={() => navigate("/queryTool")}
+        >
+          <IconHelpCircle size={28} />
+        </ActionIcon>
+      </Tooltip>
     </Box>
   );
 };
