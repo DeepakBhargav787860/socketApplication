@@ -55,7 +55,7 @@ const LoginPage = () => {
             style={{
               position: "absolute",
               top: 100,
-              left: "50%",
+              left: "30%",
               transform: "translateX(-50%)",
               background: "white",
               padding: "12px 24px",
