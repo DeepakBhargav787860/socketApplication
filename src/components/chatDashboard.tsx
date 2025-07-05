@@ -96,7 +96,11 @@ const ChatDashboard = () => {
       </Grid>
 
       {/* Floating Query Button */}
-      <Tooltip label="Have a question? Open Query Tool!" position="left" withArrow>
+      <Tooltip
+        label="Have a question? Open Query Tool!"
+        position="left"
+        withArrow
+      >
         <ActionIcon
           size="xl"
           radius="xl"
