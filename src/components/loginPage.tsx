@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Card,
-  Center,
   Group,
   PasswordInput,
   SimpleGrid,
@@ -10,15 +9,25 @@ import {
   Text,
   TextInput,
   Title,
+  Transition,
 } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconPhone, IconLock } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showWelcome, setShowWelcome] = useState(true); // welcome msg visibility
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+    }, 1000); // Hide after 1 second
+
+    return () => clearTimeout(timer); // Clean up
+  }, []);
 
   return (
     <Box
@@ -29,9 +38,42 @@ const LoginPage = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        position: "relative",
         padding: 16,
+        overflow: "hidden",
       }}
     >
+      {/* Welcome Animation Overlay */}
+      <Transition
+        mounted={showWelcome}
+        transition="slide-down"
+        duration={400}
+        timingFunction="ease"
+      >
+        {(styles) => (
+          <Box
+            style={{
+              position: "absolute",
+              top: 100,
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "white",
+              padding: "12px 24px",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              fontSize: 24,
+              fontWeight: 600,
+              color: "#764ba2",
+              zIndex: 1000,
+              ...styles,
+            }}
+          >
+            Hi Jali 🌸
+          </Box>
+        )}
+      </Transition>
+
+      {/* Main Card */}
       <Card
         shadow="md"
         radius="lg"
@@ -70,6 +112,7 @@ const LoginPage = () => {
             radius="md"
             size="md"
           />
+
           <SimpleGrid cols={2}>
             <Button
               fullWidth
