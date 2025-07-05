@@ -1,3 +1,4 @@
+import ActiveUser from "@/components/activeUser";
 import ChatDashboard from "@/components/chatDashboard";
 import LoginPage from "@/components/loginPage";
 import SignPage from "@/components/signup";
@@ -15,6 +16,10 @@ const Router = createBrowserRouter([
   {
     path: "/chatDashboard",
     element: <ChatDashboard />,
+  },
+  {
+    path: "/activeUser",
+    element: <ActiveUser />,
   },
 ]);
 

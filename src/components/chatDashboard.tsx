@@ -5,41 +5,47 @@ import {
   Text,
   Stack,
   useMantineTheme,
-} from '@mantine/core';
+} from "@mantine/core";
 import {
   IconMessage,
   IconSend,
   IconInbox,
   IconUserPlus,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 
 const ChatDashboard = () => {
   const theme = useMantineTheme();
+  const navigate = useNavigate();
 
   const cards = [
     {
-      title: 'Start Chat',
+      title: "Start Chat",
       icon: <IconMessage size={32} />,
       color: theme.colors.blue[6],
       bg: theme.colors.blue[0],
+      link: "/activeUser",
     },
     {
-      title: 'Sent Requests',
+      title: "Sent Requests",
       icon: <IconSend size={32} />,
       color: theme.colors.green[6],
       bg: theme.colors.green[0],
+      link: "/activeUser",
     },
     {
-      title: 'Incoming Requests',
+      title: "Incoming Requests",
       icon: <IconInbox size={32} />,
       color: theme.colors.orange[6],
       bg: theme.colors.orange[0],
+      link: "/activeUser",
     },
     {
-      title: 'Requested Users',
+      title: "Requested Users",
       icon: <IconUserPlus size={32} />,
       color: theme.colors.pink[6],
       bg: theme.colors.pink[0],
+      link: "/activeUser",
     },
   ];
 
@@ -54,14 +60,19 @@ const ChatDashboard = () => {
             <Box
               bg={card.bg}
               p="lg"
+              onClick={() => navigate(card.link)}
               style={{
-                borderRadius: '16px',
+                borderRadius: "16px",
                 boxShadow: theme.shadows.sm,
-                transition: 'transform 0.2s ease',
-                cursor: 'pointer',
+                transition: "transform 0.2s ease",
+                cursor: "pointer",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
-              onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.03)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
             >
               <Stack align="center" spacing="xs">
                 <Box c={card.color}>{card.icon}</Box>
