@@ -2,7 +2,6 @@ import {
   Box,
   Button,
   Card,
-  Group,
   PasswordInput,
   SimpleGrid,
   Stack,
@@ -12,12 +11,28 @@ import {
   Transition,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { IconPhone, IconLock } from "@tabler/icons-react";
-import { useNavigate } from "react-router-dom";
+import { IconPhone, IconLock, IconCheck, IconX } from "@tabler/icons-react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useForm } from "@mantine/form";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { showNotification } from "@mantine/notifications";
 
 const LoginPage = () => {
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const form = useForm({
+    initialValues: {
+      username: "",
+      password: "",
+    },
+
+    validate: {
+      username: (value) =>
+        value.trim().length === 0 ? "Name is required" : null,
+      password: (value) =>
+        value.length < 6 ? "Password must be at least 6 characters" : null,
+    },
+  });
+
   const [showWelcome, setShowWelcome] = useState(true); // welcome msg visibility
   const navigate = useNavigate();
 
@@ -28,6 +43,56 @@ const LoginPage = () => {
 
     return () => clearTimeout(timer); // Clean up
   }, []);
+
+  const { isLoading: isLoginLoading, mutate: login } = useMutation<any, Error>(
+    async () => {
+      if (true) {
+        return await axios.post<any>(
+          "https://mysocket-6xmu.onrender.com/loginUser",
+          {
+            username: form.values.username,
+            password: form.values.password,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+      }
+    },
+    {
+      onSuccess: (response) => {
+        console.log("response", response);
+        showNotification({
+          title: "Success",
+          message: "Login Successfully",
+          color: "teal",
+          icon: <IconCheck />,
+        });
+        navigate("/chatDashboard");
+      },
+      onError: (errMsg: any) => {
+        showNotification({
+          title: "Error",
+          message: errMsg,
+          color: "red",
+          icon: <IconX />,
+        });
+      },
+    }
+  );
+
+  const handleSubmit = (values: typeof form.values) => {
+    if (!form.validate().hasErrors) {
+      login();
+    } else {
+      showNotification({
+        title: "Error",
+        message: "enter the correct details",
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+  };
 
   return (
     <Box
@@ -92,54 +157,57 @@ const LoginPage = () => {
           <Text align="center" size="sm" color="dimmed">
             Login to your account
           </Text>
-
-          <TextInput
-            label="Phone Number"
-            placeholder="Enter your phone"
-            icon={<IconPhone size={18} />}
-            value={phone}
-            onChange={(e) => setPhone(e.currentTarget.value)}
-            radius="md"
-            size="md"
-          />
-
-          <PasswordInput
-            label="Password"
-            placeholder="Enter your password"
-            icon={<IconLock size={18} />}
-            value={password}
-            onChange={(e) => setPassword(e.currentTarget.value)}
-            radius="md"
-            size="md"
-          />
-
-          <SimpleGrid cols={2}>
-            <Button
-              fullWidth
-              radius="xl"
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <TextInput
+              label="Phone Number"
+              placeholder="Enter your phone"
+              icon={<IconPhone size={18} />}
+              {...form.getInputProps("username")}
+              radius="md"
               size="md"
-              style={{
-                background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                fontWeight: 600,
-              }}
-            >
-              Login
-            </Button>
-            <Button
-              onClick={() => navigate("/signUp")}
-              fullWidth
-              radius="xl"
+            />
+
+            <PasswordInput
+              label="Password"
+              placeholder="Enter your password"
+              icon={<IconLock size={18} />}
+              {...form.getInputProps("password")}
+              radius="md"
               size="md"
-              style={{
-                background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                fontWeight: 600,
-              }}
-            >
-              Sign Up
-            </Button>
-          </SimpleGrid>
+            />
+
+            <SimpleGrid cols={2}>
+              <Button
+                loading={isLoginLoading}
+                type="submit"
+                fullWidth
+                radius="xl"
+                size="md"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              >
+                Login
+              </Button>
+              <Button
+                onClick={() => navigate("/signUp")}
+                fullWidth
+                radius="xl"
+                size="md"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              >
+                Sign Up
+              </Button>
+            </SimpleGrid>
+          </form>
         </Stack>
       </Card>
     </Box>

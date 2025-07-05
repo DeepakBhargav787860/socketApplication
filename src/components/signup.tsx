@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Group,
+  Notification,
   PasswordInput,
   Stack,
   Text,
@@ -10,14 +11,22 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconPhone, IconLock, IconArrowLeft } from "@tabler/icons-react";
+import { showNotification } from "@mantine/notifications";
+import {
+  IconPhone,
+  IconLock,
+  IconArrowLeft,
+  IconCheck,
+} from "@tabler/icons-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SignPage = () => {
   const socket = new WebSocket("wss://mysocket-6xmu.onrender.com/ws");
   const health = "https://mysocket-6xmu.onrender.com/health";
-  const Profilesocket = new WebSocket("wss://mysocket-6xmu.onrender.com/createProfile");
+  const Profilesocket = new WebSocket(
+    "wss://mysocket-6xmu.onrender.com/createProfile"
+  );
   // const socket = new WebSocket("ws://localhost:8080/ws");
   // const health = "http://localhost:8080/health";
 
@@ -61,6 +70,12 @@ const SignPage = () => {
     Profilesocket.send(JSON.stringify(msg));
     form.reset();
     navigate("/");
+    showNotification({
+      title: "Success",
+      message: " signup successfully 🌸",
+      color: "teal",
+      icon: <IconCheck />,
+    });
   };
 
   useEffect(() => {
