@@ -31,21 +31,21 @@ const ChatDashboard = () => {
       icon: <IconSend size={32} />,
       color: theme.colors.green[6],
       bg: theme.colors.green[0],
-      link: "/activeUser",
+      link: "/sentRequest",
     },
     {
       title: "Incoming Requests",
       icon: <IconInbox size={32} />,
       color: theme.colors.orange[6],
       bg: theme.colors.orange[0],
-      link: "/activeUser",
+      link: "/inComingRequest",
     },
     {
       title: "Requested Users",
       icon: <IconUserPlus size={32} />,
       color: theme.colors.pink[6],
       bg: theme.colors.pink[0],
-      link: "/activeUser",
+      link: "/requestedUser",
     },
   ];
 
