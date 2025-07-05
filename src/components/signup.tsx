@@ -9,26 +9,76 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import { useState } from "react";
+import { useForm } from "@mantine/form";
 import { IconPhone, IconLock, IconArrowLeft } from "@tabler/icons-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SignPage = () => {
+  const socket = new WebSocket("wss://mysocket-6xmu.onrender.com/ws");
+  const health = "https://mysocket-6xmu.onrender.com/health";
+  const Profilesocket = new WebSocket("wss://mysocket-6xmu.onrender.com/createProfile");
+  // const socket = new WebSocket("ws://localhost:8080/ws");
+  // const health = "http://localhost:8080/health";
+
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const form = useForm({
+    initialValues: {
+      username: "",
+      mobileNo: "",
+      address: "",
+      emailId: "",
+      password: "",
+      confirmPassword: "",
+    },
+
+    validate: {
+      username: (value) =>
+        value.trim().length === 0 ? "Name is required" : null,
+      mobileNo: (value) =>
+        /^\d{10}$/.test(value) ? null : "Enter a valid 10-digit phone number",
+      address: (value) =>
+        value.trim().length === 0 ? "Address is required" : null,
+      emailId: (value) =>
+        /^\S+@\S+\.\S+$/.test(value) ? null : "Enter a valid email",
+      password: (value) =>
+        value.length < 6 ? "Password must be at least 6 characters" : null,
+      confirmPassword: (value, values) =>
+        value !== values.password ? "Passwords do not match" : null,
+    },
   });
 
-  const handleChange =
-    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm({ ...form, [field]: e.currentTarget.value });
+  const handleSubmit = (values: typeof form.values) => {
+    console.log("Form submitted ✅", values);
+    const msg = {
+      username: values?.username,
+      mobileNo: values?.mobileNo,
+      address: values?.address,
+      emailId: values?.emailId,
+      password: values?.password,
     };
+    Profilesocket.send(JSON.stringify(msg));
+    form.reset();
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetch(health)
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          console.log(data.response);
+        })
+        .catch((err) => {
+          console.error("Error:", err);
+        });
+    }, 300000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Box
@@ -70,92 +120,90 @@ const SignPage = () => {
           border: "1px solid #e0e0e0",
         }}
       >
-        <Stack spacing="sm">
-          <Title order={3} align="center" style={{ color: "#333" }}>
-            JaliTalks 👋
-          </Title>
-          <Text align="center" size="xs" color="dimmed">
-            Create your account
-          </Text>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack spacing="sm">
+            <Title order={3} align="center" style={{ color: "#333" }}>
+              JaliTalks 👋
+            </Title>
+            <Text align="center" size="xs" color="dimmed">
+              Create your account
+            </Text>
 
-          <TextInput
-            label="Name"
-            placeholder="Enter your name"
-            icon={<IconPhone size={16} />}
-            value={form.name}
-            onChange={handleChange("name")}
-            radius="md"
-            size="sm"
-          />
-
-          <TextInput
-            label="Phone Number"
-            placeholder="Enter your phone"
-            icon={<IconPhone size={16} />}
-            value={form.phone}
-            onChange={handleChange("phone")}
-            radius="md"
-            size="sm"
-          />
-
-          <TextInput
-            label="Address"
-            placeholder="Enter your address"
-            icon={<IconPhone size={16} />}
-            value={form.address}
-            onChange={handleChange("address")}
-            radius="md"
-            size="sm"
-          />
-
-          <TextInput
-            label="Email"
-            placeholder="Enter your email"
-            icon={<IconPhone size={16} />}
-            value={form.email}
-            onChange={handleChange("email")}
-            radius="md"
-            size="sm"
-          />
-
-          <PasswordInput
-            label="Password"
-            placeholder="Enter password"
-            icon={<IconLock size={16} />}
-            value={form.password}
-            onChange={handleChange("password")}
-            radius="md"
-            size="sm"
-          />
-
-          <PasswordInput
-            label="Confirm Password"
-            placeholder="Re-enter password"
-            icon={<IconLock size={16} />}
-            value={form.confirmPassword}
-            onChange={handleChange("confirmPassword")}
-            radius="md"
-            size="sm"
-          />
-
-          <Group position="apart" mt="sm">
-            <Button
-              fullWidth
-              radius="xl"
+            <TextInput
+              label="Name"
+              placeholder="Enter your name"
+              icon={<IconPhone size={16} />}
+              radius="md"
               size="sm"
-              style={{
-                background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
-                color: "white",
-                fontWeight: 600,
-              }}
-            >
-              SignUp
-            </Button>
-          </Group>
-        </Stack>
+              {...form.getInputProps("username")}
+            />
+
+            <TextInput
+              label="Phone Number"
+              placeholder="Enter your phone"
+              icon={<IconPhone size={16} />}
+              radius="md"
+              size="sm"
+              {...form.getInputProps("mobileNo")}
+            />
+
+            <TextInput
+              label="Address"
+              placeholder="Enter your address"
+              icon={<IconPhone size={16} />}
+              radius="md"
+              size="sm"
+              {...form.getInputProps("address")}
+            />
+
+            <TextInput
+              label="Email"
+              placeholder="Enter your email"
+              icon={<IconPhone size={16} />}
+              radius="md"
+              size="sm"
+              {...form.getInputProps("emailId")}
+            />
+
+            <PasswordInput
+              label="Password"
+              placeholder="Enter password"
+              icon={<IconLock size={16} />}
+              radius="md"
+              size="sm"
+              {...form.getInputProps("password")}
+            />
+
+            <PasswordInput
+              label="Confirm Password"
+              placeholder="Re-enter password"
+              icon={<IconLock size={16} />}
+              radius="md"
+              size="sm"
+              {...form.getInputProps("confirmPassword")}
+            />
+
+            <Group position="apart" mt="sm">
+              <Button
+                type="submit"
+                fullWidth
+                radius="xl"
+                size="sm"
+                style={{
+                  background:
+                    "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              >
+                SignUp
+              </Button>
+            </Group>
+          </Stack>
+        </form>
       </Card>
 
-      {/* ✨ Blinking animatilon */}
+      {/* ✨ Blinking animation */}
       <style>
         {`
           @keyframes blink {
