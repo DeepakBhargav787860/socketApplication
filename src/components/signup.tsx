@@ -29,6 +29,7 @@ const SignPage = () => {
   );
   // const socket = new WebSocket("ws://localhost:8080/ws");
   // const health = "http://localhost:8080/health";
+  // const Profilesocket = new WebSocket("ws://localhost:8080/createProfile");
 
   const navigate = useNavigate();
 

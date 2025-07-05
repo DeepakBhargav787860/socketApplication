@@ -21,13 +21,13 @@ import { showNotification } from "@mantine/notifications";
 const LoginPage = () => {
   const form = useForm({
     initialValues: {
-      username: "",
+      mobileNo: "",
       password: "",
     },
 
     validate: {
-      username: (value) =>
-        value.trim().length === 0 ? "Name is required" : null,
+      mobileNo: (value) =>
+        /^\d{10}$/.test(value) ? null : "Enter a valid 10-digit phone number",
       password: (value) =>
         value.length < 6 ? "Password must be at least 6 characters" : null,
     },
@@ -50,7 +50,7 @@ const LoginPage = () => {
         return await axios.post<any>(
           "https://mysocket-6xmu.onrender.com/loginUser",
           {
-            username: form.values.username,
+            mobileNo: form.values.mobileNo,
             password: form.values.password,
           },
           {
@@ -61,19 +61,34 @@ const LoginPage = () => {
     },
     {
       onSuccess: (response) => {
-        console.log("response", response);
+        localStorage.setItem(
+          "mobileNo",
+          JSON.stringify(response?.data?.user?.mobileNo)
+        );
+        localStorage.setItem(
+          "userName",
+          JSON.stringify(response?.data?.user?.userName)
+        );
+        localStorage.setItem("id", JSON.stringify(response?.data?.user?.id));
+        localStorage.setItem(
+          "uuid",
+          JSON.stringify(response?.data?.user?.uuid)
+        );
+        localStorage.setItem("user", JSON.stringify(response?.data?.user));
+
         showNotification({
           title: "Success",
-          message: "Login Successfully",
+          message: response?.data?.message,
           color: "teal",
           icon: <IconCheck />,
         });
         navigate("/chatDashboard");
       },
       onError: (errMsg: any) => {
+        console.log("errmsg", errMsg?.response?.data);
         showNotification({
           title: "Error",
-          message: errMsg,
+          message: errMsg?.response?.data,
           color: "red",
           icon: <IconX />,
         });
@@ -162,7 +177,7 @@ const LoginPage = () => {
               label="Phone Number"
               placeholder="Enter your phone"
               icon={<IconPhone size={18} />}
-              {...form.getInputProps("username")}
+              {...form.getInputProps("mobileNo")}
               radius="md"
               size="md"
             />
