@@ -26,6 +26,7 @@ import { useState } from "react";
 const RequestedUser = () => {
   const userFind = "https://mysocket-6xmu.onrender.com/findUserByMobileNo";
   // const userFind = "http://localhost:8080/findUserByMobileNo";
+  axios.defaults.withCredentials = true;
   const [userData, setUserData] = useState<any>({});
   let mNo = localStorage.getItem("mobileNo");
   console.log("mNo", mNo);
