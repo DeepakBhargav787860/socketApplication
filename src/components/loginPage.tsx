@@ -19,6 +19,9 @@ import axios from "axios";
 import { showNotification } from "@mantine/notifications";
 
 const LoginPage = () => {
+  const loginUrl = "https://mysocket-6xmu.onrender.com/loginUser";
+  // const loginUrl = "http://localhost:8080/loginUser";
+  axios.defaults.withCredentials = true;
   const form = useForm({
     initialValues: {
       mobileNo: "",
@@ -48,32 +51,23 @@ const LoginPage = () => {
     async () => {
       if (true) {
         return await axios.post<any>(
-          "https://mysocket-6xmu.onrender.com/loginUser",
+          loginUrl,
           {
             mobileNo: form.values.mobileNo,
             password: form.values.password,
           },
           {
-            withCredentials: true,
+            withCredentials: false,
           }
         );
       }
     },
     {
       onSuccess: (response) => {
-        localStorage.setItem(
-          "mobileNo",
-          JSON.stringify(response?.data?.user?.mobileNo)
-        );
-        localStorage.setItem(
-          "userName",
-          JSON.stringify(response?.data?.user?.userName)
-        );
-        localStorage.setItem("id", JSON.stringify(response?.data?.user?.id));
-        localStorage.setItem(
-          "uuid",
-          JSON.stringify(response?.data?.user?.uuid)
-        );
+        localStorage.setItem("mobileNo", response?.data?.user?.mobileNo);
+        localStorage.setItem("userName", response?.data?.user?.username);
+        localStorage.setItem("id", response?.data?.user?.id);
+        localStorage.setItem("uuid", response?.data?.user?.uuid);
         localStorage.setItem("user", JSON.stringify(response?.data?.user));
 
         showNotification({
