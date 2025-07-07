@@ -21,7 +21,7 @@ import { showNotification } from "@mantine/notifications";
 const LoginPage = () => {
   const loginUrl = "https://mysocket-6xmu.onrender.com/loginUser";
   // const loginUrl = "http://localhost:8080/loginUser";
-  axios.defaults.withCredentials = true;
+  // axios.defaults.withCredentials = true;
   const form = useForm({
     initialValues: {
       mobileNo: "",
@@ -50,16 +50,10 @@ const LoginPage = () => {
   const { isLoading: isLoginLoading, mutate: login } = useMutation<any, Error>(
     async () => {
       if (true) {
-        return await axios.post<any>(
-          loginUrl,
-          {
-            mobileNo: form.values.mobileNo,
-            password: form.values.password,
-          },
-          {
-            withCredentials: false,
-          }
-        );
+        return await axios.post<any>(loginUrl, {
+          mobileNo: form.values.mobileNo,
+          password: form.values.password,
+        });
       }
     },
     {
