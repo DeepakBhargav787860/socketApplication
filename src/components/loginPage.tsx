@@ -17,11 +17,9 @@ import { useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { showNotification } from "@mantine/notifications";
+import API from "@/lib/Api";
 
 const LoginPage = () => {
-  const loginUrl = "https://mysocket-6xmu.onrender.com/loginUser";
-  // const loginUrl = "http://localhost:8080/loginUser";
-  axios.defaults.withCredentials = true;
   const form = useForm({
     initialValues: {
       mobileNo: "",
@@ -50,8 +48,8 @@ const LoginPage = () => {
   const { isLoading: isLoginLoading, mutate: login } = useMutation<any, Error>(
     async () => {
       if (true) {
-        return await axios.post<any>(
-          loginUrl,
+        return await API.post<any>(
+          "/loginUser",
           {
             mobileNo: form.values.mobileNo,
             password: form.values.password,

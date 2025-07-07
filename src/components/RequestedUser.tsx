@@ -1,3 +1,5 @@
+import API from "@/lib/Api";
+import IsEmptyOrZeroOrUndefined from "@/utils/utils";
 import {
   Box,
   Button,
@@ -22,13 +24,13 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const RequestedUser = () => {
-  const userFind = "https://mysocket-6xmu.onrender.com/findUserByMobileNo";
-  // const userFind = "http://localhost:8080/findUserByMobileNo";
-  axios.defaults.withCredentials = true;
+  const navigate = useNavigate();
   const [userData, setUserData] = useState<any>({});
   let mNo = localStorage.getItem("mobileNo");
+  let pId = Number(localStorage.getItem("id"));
   console.log("mNo", mNo);
   const form = useForm({
     initialValues: {
@@ -40,13 +42,28 @@ const RequestedUser = () => {
     },
   });
 
+  // const requestForm = useForm({
+  //   initialValues: {
+  //     userProfileId: "",
+  //     friendId: "",
+  //   },
+  //   validate: {
+  //     userProfileId: (value) =>
+  //       IsEmptyOrZeroOrUndefined(value)
+  //         ? "failed to pass user profile id"
+  //         : null,
+  //     friendId: (value) =>
+  //       IsEmptyOrZeroOrUndefined(value) ? "failed to pass friend id" : null,
+  //   },
+  // });
+
   const { isLoading: findUserLoading, mutate: findUser } = useMutation<
     any,
     Error
   >(
     async () => {
-      return await axios.post<any>(
-        userFind,
+      return await API.post<any>(
+        "/findUserByMobileNo",
         { mobileNo: form.values.mobileNo },
         { withCredentials: true }
       );
@@ -83,6 +100,61 @@ const RequestedUser = () => {
       showNotification({
         title: "Error",
         message: "Please enter a valid number",
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+  };
+
+  //send request
+
+  const { isLoading: sendUserRequestLoading, mutate: sendUserRequest } =
+    useMutation<any, Error>(
+      async () => {
+        return await API.post<any>(
+          "/requestSend",
+          {
+            userProfileId: Number(pId),
+            friendId: Number(userData?.id),
+          },
+          {
+            withCredentials: true,
+          }
+        );
+      },
+      {
+        onSuccess: (response) => {
+          showNotification({
+            title: "Success",
+            message: response?.data?.data,
+            color: "teal",
+            icon: <IconCheck />,
+          });
+          navigate("/chatDashboard");
+        },
+        onError: (errMsg: any) => {
+          console.log("errmsg", errMsg);
+          showNotification({
+            title: "Error",
+            message: errMsg?.response?.data || "Something went wrong",
+            color: "red",
+            icon: <IconX />,
+          });
+          navigate("/chatDashboard");
+        },
+      }
+    );
+
+  const sentRequest = () => {
+    if (
+      !IsEmptyOrZeroOrUndefined(pId) &&
+      !IsEmptyOrZeroOrUndefined(userData?.id)
+    ) {
+      sendUserRequest();
+    } else {
+      showNotification({
+        title: "Error",
+        message: "Something went wrong",
         color: "red",
         icon: <IconX />,
       });
@@ -128,6 +200,8 @@ const RequestedUser = () => {
             </Group>
 
             <Button
+              loading={sendUserRequestLoading}
+              onClick={sentRequest}
               fullWidth
               radius="xl"
               size="md"
