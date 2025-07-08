@@ -162,7 +162,7 @@ const ChatDashboard = () => {
         inComingRequest.close();
       }
     };
-  }, [pId]);
+  }, [pId,incomingReq]);
 
   //end
 
