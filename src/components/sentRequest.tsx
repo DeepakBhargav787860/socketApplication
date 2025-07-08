@@ -101,8 +101,10 @@ const SentRequest = () => {
                       {item.friendReqStatus === "YES"
                         ? "Accepted"
                         : item.friendReqStatus == "NO"
-                        ? "Rejected"
-                        : "Blocked"}
+                        ? "NO"
+                        : item.friendReqStatus == "BLOCKED"
+                        ? "Blocked"
+                        : "Rejected"}
                     </Badge>
                   </Group>
                 </Card>
