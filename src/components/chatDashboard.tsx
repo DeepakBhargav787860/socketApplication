@@ -66,7 +66,7 @@ const ChatDashboard = () => {
     sendRequest();
   }, []);
 
-  let cards: any;
+  let cards: any=[];
   useEffect(() => {
     cards = [
       {
