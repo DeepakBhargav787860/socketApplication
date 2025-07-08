@@ -61,58 +61,55 @@ const ChatDashboard = () => {
       },
     }
   );
-//fgh
+
   useEffect(() => {
     sendRequest();
   }, []);
 
-  let cards: any=[];
-  useEffect(() => {
-    cards = [
-      {
-        title: "Start Chat",
-        icon: <IconMessage size={32} />,
-        color: theme.colors.blue[6],
-        bg: theme.colors.blue[0],
-        link: "/activeUser",
-        count: 0,
-        state: {},
-      },
-      {
-        title: "Sent Requests",
-        icon: <IconSend size={32} />,
-        color: theme.colors.green[6],
-        bg: theme.colors.green[0],
-        link: "/sentRequest",
-        count:
-          Array.isArray(getRequest) && getRequest.length > 0
-            ? getRequest.length
-            : 0,
-        state: { state: getRequest },
-      },
-      {
-        title: "Incoming Requests",
-        icon: <IconInbox size={32} />,
-        color: theme.colors.orange[6],
-        bg: theme.colors.orange[0],
-        link: "/inComingRequest",
-        count:
-          Array.isArray(incomingReq) && incomingReq.length > 0
-            ? incomingReq.length
-            : 0,
-        state: { state: incomingReq },
-      },
-      {
-        title: "Requested Users",
-        icon: <IconUserPlus size={32} />,
-        color: theme.colors.pink[6],
-        bg: theme.colors.pink[0],
-        link: "/requestedUser",
-        count: 0,
-        state: {},
-      },
-    ];
-  }, [incomingReq, getRequest]);
+  const cards = [
+    {
+      title: "Start Chat",
+      icon: <IconMessage size={32} />,
+      color: theme.colors.blue[6],
+      bg: theme.colors.blue[0],
+      link: "/activeUser",
+      count: 0,
+      state: {},
+    },
+    {
+      title: "Sent Requests",
+      icon: <IconSend size={32} />,
+      color: theme.colors.green[6],
+      bg: theme.colors.green[0],
+      link: "/sentRequest",
+      count:
+        Array.isArray(getRequest) && getRequest.length > 0
+          ? getRequest.length
+          : 0,
+      state: { state: getRequest },
+    },
+    {
+      title: "Incoming Requests",
+      icon: <IconInbox size={32} />,
+      color: theme.colors.orange[6],
+      bg: theme.colors.orange[0],
+      link: "/inComingRequest",
+      count:
+        Array.isArray(incomingReq) && incomingReq.length > 0
+          ? incomingReq.length
+          : 0,
+      state: { state: incomingReq },
+    },
+    {
+      title: "Requested Users",
+      icon: <IconUserPlus size={32} />,
+      color: theme.colors.pink[6],
+      bg: theme.colors.pink[0],
+      link: "/requestedUser",
+      count: 0,
+      state: {},
+    },
+  ];
 
   //incoming request work
   useEffect(() => {
@@ -217,7 +214,11 @@ const ChatDashboard = () => {
                     zIndex: 1,
                   }}
                 >
-                  {card.count}
+                  {index == 1
+                    ? getRequest?.length
+                    : index == 2
+                    ? incomingReq?.length
+                    : null}
                 </Box>
               )}
 
