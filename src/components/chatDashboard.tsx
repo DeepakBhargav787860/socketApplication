@@ -34,6 +34,7 @@ const ChatDashboard = () => {
   const navigate = useNavigate();
   let pId = Number(localStorage.getItem("id"));
   const [getRequest, setRequest] = useState<any>([]);
+  const [incomingReq, setIncomingReq] = useState<any>([]);
 
   const { isLoading: findUserLoading, mutate: sendRequest } = useMutation<
     any,
@@ -93,8 +94,11 @@ const ChatDashboard = () => {
       color: theme.colors.orange[6],
       bg: theme.colors.orange[0],
       link: "/inComingRequest",
-      count: 0,
-      state: {},
+      count:
+        Array.isArray(incomingReq) && incomingReq.length > 0
+          ? incomingReq.length
+          : 0,
+      state: { state: incomingReq },
     },
     {
       title: "Requested Users",
@@ -106,6 +110,61 @@ const ChatDashboard = () => {
       state: {},
     },
   ];
+
+  //incoming request work
+  useEffect(() => {
+    if (!pId) return;
+
+    // 1. Create WebSocket instance
+    const inComingRequest = new WebSocket(
+      "wss://mysocket-6xmu.onrender.com/getIncomingRequest"
+    );
+
+    // const inComingRequest = new WebSocket(
+    //   "ws://localhost:8080/getIncomingRequest"
+    // );
+    // 2. On socket open – send the payload
+    inComingRequest.onopen = () => {
+      console.log("WebSocket connected ✅");
+
+      const payload = {
+        id: pId,
+      };
+
+      inComingRequest.send(JSON.stringify(payload));
+      console.log("Payload sent:", payload);
+    };
+
+    // 3. On receiving message from server
+    inComingRequest.onmessage = (event) => {
+      try {
+        const responseData = JSON.parse(event.data);
+        console.log("Received from WS:", responseData);
+        setIncomingReq(responseData);
+      } catch (err) {
+        console.error("Invalid JSON received:", event.data);
+      }
+    };
+
+    // 4. On error
+    inComingRequest.onerror = (error) => {
+      console.error("WebSocket error ❌:", error);
+    };
+
+    // 5. On close
+    inComingRequest.onclose = (event) => {
+      console.log("WebSocket closed 🔒", event.code, event.reason);
+    };
+
+    // 6. Cleanup on component unmount
+    return () => {
+      if (inComingRequest.readyState === WebSocket.OPEN) {
+        inComingRequest.close();
+      }
+    };
+  }, [pId]);
+
+  //end
 
   return (
     <Box p="md" pos="relative">

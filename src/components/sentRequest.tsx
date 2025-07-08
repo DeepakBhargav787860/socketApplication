@@ -79,11 +79,11 @@ const SentRequest = () => {
                           Request ID: {item?.requestData?.uuid}
                         </Text>
                         <Text fw={600} size="sm" c="gray.6">
-                          Request USERNAME: {item?.requestData?.username}
+                          USERNAME: {item?.requestData?.username}
                         </Text>
 
                         <Text fw={600} size="sm" c="gray.6">
-                          Request Mobile NO.: {item?.requestData?.mobileNo}
+                          Mobile NO.: {item?.requestData?.mobileNo}
                         </Text>
                       </Box>
                     </Group>
