@@ -27,7 +27,7 @@ const SentRequest = () => {
 
     return () => clearTimeout(timeout);
   }, []);
-
+  console.log("requested data", requestData);
   return (
     <Box
       h="100vh"
@@ -90,11 +90,19 @@ const SentRequest = () => {
 
                     <Badge
                       color={
-                        item.friendReqStatus === "YES" ? "green" : "orange"
+                        item.friendReqStatus === "YES"
+                          ? "green"
+                          : item.friendReqStatus == "NO"
+                          ? "orange"
+                          : "red"
                       }
                       variant="filled"
                     >
-                      {item?.friendReqStatus}
+                      {item.friendReqStatus === "YES"
+                        ? "Accepted"
+                        : item.friendReqStatus == "NO"
+                        ? "Rejected"
+                        : "Blocked"}
                     </Badge>
                   </Group>
                 </Card>

@@ -9,17 +9,22 @@ import {
   Avatar,
   Badge,
   Divider,
+  Button,
+  MediaQuery,
 } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
-import { useLocation } from "react-router-dom";
+import { IconCheck, IconSend, IconX } from "@tabler/icons-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import API from "@/lib/Api";
+import { showNotification } from "@mantine/notifications";
 
 const InComingRequest = () => {
   const location = useLocation();
   const requestData = location.state || [];
 
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const timeout = setTimeout(() => {
       setLoading(false);
@@ -27,6 +32,49 @@ const InComingRequest = () => {
 
     return () => clearTimeout(timeout);
   }, []);
+
+  const handleAction = (action: string, rId: number, pId: number) => {
+    let v: any = {
+      userProfileId: pId,
+      requestId: rId,
+      status: action,
+    };
+    requestStatus(v);
+  };
+
+  const { isLoading: requestLoading, mutate: requestStatus } = useMutation<
+    any,
+    Error
+  >(
+    async (v: any) => {
+      if (true) {
+        return await API.post<any>("/requestARB", v, {
+          withCredentials: true,
+        });
+      }
+    },
+    {
+      onSuccess: (response) => {
+        showNotification({
+          title: "Success",
+          message: response?.data?.data,
+          color: "teal",
+          icon: <IconCheck />,
+        });
+        navigate("/chatDashboard");
+      },
+      onError: (errMsg: any) => {
+        console.log("errmsg", errMsg?.response?.data);
+        showNotification({
+          title: "Error",
+          message: errMsg?.response?.data,
+          color: "red",
+          icon: <IconX />,
+        });
+        navigate("/chatDashboard");
+      },
+    }
+  );
 
   return (
     <Box
@@ -69,7 +117,7 @@ const InComingRequest = () => {
                   radius="md"
                   withBorder
                 >
-                  <Group position="apart">
+                  <Group position="apart" align="flex-start">
                     <Group>
                       <Avatar color="blue" radius="xl">
                         <IconSend size={18} />
@@ -81,7 +129,6 @@ const InComingRequest = () => {
                         <Text fw={600} size="sm" c="gray.6">
                           USERNAME: {item?.userProfileData?.username}
                         </Text>
-
                         <Text fw={600} size="sm" c="gray.6">
                           Mobile NO.: {item?.userProfileData?.mobileNo}
                         </Text>
@@ -97,6 +144,62 @@ const InComingRequest = () => {
                       {item?.friendReqStatus}
                     </Badge>
                   </Group>
+
+                  <Divider my="sm" />
+
+                  {/* Buttons Section */}
+                  <MediaQuery
+                    smallerThan="sm"
+                    styles={{ flexDirection: "column", gap: 8 }}
+                  >
+                    <Group position="apart" mt="sm">
+                      <Button
+                        loading={requestLoading}
+                        fullWidth
+                        color="green"
+                        variant="light"
+                        onClick={() =>
+                          handleAction(
+                            "YES",
+                            item?.requestId,
+                            item?.userProfileId
+                          )
+                        }
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        loading={requestLoading}
+                        fullWidth
+                        color="red"
+                        variant="light"
+                        onClick={() =>
+                          handleAction(
+                            "REJECTED",
+                            item?.requestId,
+                            item?.userProfileId
+                          )
+                        }
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        loading={requestLoading}
+                        fullWidth
+                        color="gray"
+                        variant="outline"
+                        onClick={() =>
+                          handleAction(
+                            "BLOCKED",
+                            item?.requestId,
+                            item?.userProfileId
+                          )
+                        }
+                      >
+                        Block
+                      </Button>
+                    </Group>
+                  </MediaQuery>
                 </Card>
               ))
             )}
