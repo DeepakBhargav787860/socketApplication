@@ -25,6 +25,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Logout from "./logout";
 
 const RequestedUser = () => {
   const navigate = useNavigate();
@@ -249,6 +250,7 @@ const RequestedUser = () => {
           </form>
         </Paper>
       )}
+       <Logout />
     </Box>
   );
 };

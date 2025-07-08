@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import API from "@/lib/Api";
 import { showNotification } from "@mantine/notifications";
+import Logout from "./logout";
 
 const blink = keyframes`
   0% { opacity: 1; }
@@ -257,6 +258,7 @@ const ChatDashboard = () => {
           <IconHelpCircle size={28} />
         </ActionIcon>
       </Tooltip>
+      <Logout />
     </Box>
   );
 };

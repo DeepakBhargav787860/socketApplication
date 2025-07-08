@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import API from "@/lib/Api";
 import { showNotification } from "@mantine/notifications";
+import Logout from "./logout";
 
 const InComingRequest = () => {
   const location = useLocation();
@@ -206,6 +207,7 @@ const InComingRequest = () => {
           </Stack>
         </>
       )}
+       <Logout/>
     </Box>
   );
 };

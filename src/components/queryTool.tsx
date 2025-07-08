@@ -82,6 +82,7 @@ import {
   IconAlertTriangle,
   IconExternalLink,
 } from "@tabler/icons-react";
+import Logout from "./logout";
 
 const QueryTool = () => {
   return (
@@ -162,6 +163,7 @@ const QueryTool = () => {
           </Text>
         </Stack>
       </Box>
+      <Logout />
     </Box>
   );
 };

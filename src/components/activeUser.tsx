@@ -1,5 +1,6 @@
 import { Avatar, Box, Stack, Text, Group } from "@mantine/core";
 import { IconUser } from "@tabler/icons-react";
+import Logout from "./logout";
 
 const dummyUsers = [
   { name: "Priya Sharma", image: null },
@@ -39,6 +40,7 @@ const ActiveUser = () => {
           </Box>
         ))}
       </Stack>
+      <Logout />
     </Box>
   );
 };

@@ -13,6 +13,7 @@ import {
 import { IconSend } from "@tabler/icons-react";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Logout from "./logout";
 
 const SentRequest = () => {
   const location = useLocation();
@@ -113,6 +114,7 @@ const SentRequest = () => {
           </Stack>
         </>
       )}
+       <Logout />
     </Box>
   );
 };
