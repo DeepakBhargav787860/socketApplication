@@ -25,14 +25,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const SignPage = () => {
-  const socket = new WebSocket("wss://mysocket-6xmu.onrender.com/ws");
+  // const socket = new WebSocket("wss://mysocket-6xmu.onrender.com/ws");
   const health = "https://mysocket-6xmu.onrender.com/health";
-  const Profilesocket = new WebSocket(
-    "wss://mysocket-6xmu.onrender.com/createProfile"
-  );
+
   // const socket = new WebSocket("ws://localhost:8080/ws");
-  // const health = "http://localhost:8080/health";
-  // const Profilesocket = new WebSocket("ws://localhost:8080/createProfile");
 
   const navigate = useNavigate();
 
@@ -238,6 +234,7 @@ const SignPage = () => {
 
             <Group position="apart" mt="sm">
               <Button
+              loading={isSignUpLoading}
                 type="submit"
                 fullWidth
                 radius="xl"
