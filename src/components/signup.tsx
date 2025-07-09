@@ -1,3 +1,4 @@
+import API from "@/lib/Api";
 import {
   Box,
   Button,
@@ -17,7 +18,9 @@ import {
   IconLock,
   IconArrowLeft,
   IconCheck,
+  IconX,
 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -59,24 +62,58 @@ const SignPage = () => {
     },
   });
 
+  const { isLoading: isSignUpLoading, mutate: signUp } = useMutation<
+    any,
+    Error
+  >(
+    async (v: any) => {
+      if (true) {
+        return await API.post<any>("/signUpUser", v, {
+          withCredentials: true,
+        });
+      }
+    },
+    {
+      onSuccess: (response) => {
+        showNotification({
+          title: "Success",
+          message: response?.data?.data,
+          color: "teal",
+          icon: <IconCheck />,
+        });
+        form.reset();
+        navigate("/");
+      },
+      onError: (errMsg: any) => {
+        showNotification({
+          title: "Error",
+          message: "signUp failed",
+          color: "red",
+          icon: <IconX />,
+        });
+      },
+    }
+  );
+
   const handleSubmit = (values: typeof form.values) => {
     console.log("Form submitted ✅", values);
-    const msg = {
+    const msg: any = {
       username: values?.username,
       mobileNo: values?.mobileNo,
       address: values?.address,
       emailId: values?.emailId,
       password: values?.password,
     };
-    Profilesocket.send(JSON.stringify(msg));
-    form.reset();
-    navigate("/");
-    showNotification({
-      title: "Success",
-      message: " signup successfully 🌸",
-      color: "teal",
-      icon: <IconCheck />,
-    });
+    if (!form.validate().hasErrors) {
+      signUp(msg);
+    } else {
+      showNotification({
+        title: "Error",
+        message: "fill the details correctly",
+        color: "red",
+        icon: <IconX />,
+      });
+    }
   };
 
   useEffect(() => {
