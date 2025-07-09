@@ -6,6 +6,7 @@ import QueryTool from "@/components/queryTool";
 import RequestedUser from "@/components/RequestedUser";
 import SentRequest from "@/components/sentRequest";
 import SignPage from "@/components/signup";
+import StartChat from "@/components/startChat";
 import { createBrowserRouter } from "react-router-dom";
 
 const Router = createBrowserRouter([
@@ -40,6 +41,10 @@ const Router = createBrowserRouter([
   {
     path: "/queryTool",
     element: <QueryTool />,
+  },
+  {
+    path: "/startChat",
+    element: <StartChat />,
   },
 ]);
 

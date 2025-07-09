@@ -140,7 +140,7 @@ const LoginPage = () => {
               ...styles,
             }}
           >
-            Wel-Jali-Users 🌸
+            W-J-Users 🌸
           </Box>
         )}
       </Transition>
