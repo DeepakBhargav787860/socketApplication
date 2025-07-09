@@ -158,7 +158,7 @@ const ActiveUser = () => {
     }
   });
 
-  console.log("datas", data);
+  console.log("datas", actUser);
   return (
     <Box p={{ base: "sm", sm: "md" }} style={{ position: "relative" }}>
       {activeUserLoading ? (

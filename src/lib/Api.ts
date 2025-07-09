@@ -1,5 +1,8 @@
 import axios from 'axios';
 // for production
+
+
+
      const url="https://mysocket-6xmu.onrender.com"  
 
 export function CreateWebSocketConnection(endpoint) {
@@ -8,9 +11,12 @@ export function CreateWebSocketConnection(endpoint) {
   return new WebSocket(fullURL);
 }
 
-// for local env
-//     const url="http://localhost:8080"
 
+
+
+//for local env
+
+//  const url="http://localhost:8080"
 //  export function CreateWebSocketConnection(endpoint) {
 //   const base = "ws://localhost:8080";
 //   const fullURL = `${base}${endpoint}`;

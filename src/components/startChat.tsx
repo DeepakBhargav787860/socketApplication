@@ -2,6 +2,8 @@ import { Box, Text, Title, rem, createStyles } from "@mantine/core";
 import { IconMessageCircle2 } from "@tabler/icons-react";
 import Logout from "./logout";
 import { useLocation } from "react-router-dom";
+import IsEmptyOrZeroOrUndefined from "@/utils/utils";
+import ChatWindow from "./connection";
 
 const useStyles = createStyles((theme) => ({
   container: {
@@ -56,21 +58,27 @@ const StartChat = () => {
 
   return (
     <Box className={classes.container}>
-      <Box className={classes.iconWrapper}>
-        <IconMessageCircle2 size={40} className={classes.icon} />
-      </Box>
+      {IsEmptyOrZeroOrUndefined(username) ? (
+        <>
+          <Box className={classes.iconWrapper}>
+            <IconMessageCircle2 size={40} className={classes.icon} />
+          </Box>
 
-      <Title order={2} className={classes.title}>
-        Chat Starting...
-      </Title>
+          <Title order={2} className={classes.title}>
+            Chat Starting...
+          </Title>
 
-      <Text className={classes.subtitle}>
-        Hold on! We're connecting you with your best one 💬
-      </Text>
+          <Text className={classes.subtitle}>
+            Hold on! We're connecting you with your best one 💬
+          </Text>
 
-      <Text className={classes.usernameConnection}>
-        {username} ❤️ {fUsername}
-      </Text>
+          <Text className={classes.usernameConnection}>
+            {username} ❤️ {fUsername}
+          </Text>
+        </>
+      ) : (
+        <ChatWindow />
+      )}
 
       <Logout />
     </Box>
