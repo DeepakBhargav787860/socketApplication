@@ -1,6 +1,6 @@
 import axios from 'axios';
 // for production
-   const url="https://mysocket-6xmu.onrender.com"  
+    const url="https://mysocket-6xmu.onrender.com"  
 
 // for local env
   //  const url="http://localhost:8080"

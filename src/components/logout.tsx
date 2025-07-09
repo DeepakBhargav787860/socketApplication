@@ -1,10 +1,52 @@
+import API from "@/lib/Api";
 import { ActionIcon, Box, Tooltip } from "@mantine/core";
-import { IconLogout } from "@tabler/icons-react";
+import { showNotification } from "@mantine/notifications";
+import { IconCheck, IconLogout, IconX } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 const Logout = () => {
+  const navigate = useNavigate();
+  let pId = Number(localStorage.getItem("id"));
+  const { isLoading: isLogoutLoading, mutate: logout } = useMutation<
+    any,
+    Error
+  >(
+    async () => {
+      if (true) {
+        return await API.post<any>(
+          "/logout",
+          { id: pId },
+          {
+            withCredentials: true,
+          }
+        );
+      }
+    },
+    {
+      onSuccess: (response) => {
+        showNotification({
+          title: "Success",
+          message: response?.data?.data,
+          color: "teal",
+          icon: <IconCheck />,
+        });
+        navigate("/");
+      },
+      onError: (errMsg: any) => {
+        showNotification({
+          title: "Error",
+          message: "logout failed",
+          color: "red",
+          icon: <IconX />,
+        });
+      },
+    }
+  );
+
   const handleLogout = () => {
     // Add logout logic here (e.g., clearing tokens, redirect)
-    console.log("Logged out");
+    logout();
   };
 
   return (
@@ -18,6 +60,7 @@ const Logout = () => {
     >
       <Tooltip label="Logout" position="right" withArrow>
         <ActionIcon
+          loading={isLogoutLoading}
           variant="light"
           color="red"
           size="xl"
