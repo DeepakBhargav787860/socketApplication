@@ -88,8 +88,16 @@ const ActiveUser = () => {
     activeUSer();
   }, []);
 
-  const handleChatFun = () => {
-    navigate("/startChat");
+  const handleChatFun = (
+    pId: number,
+    frndId: number,
+    pUser: string,
+    fUser: string
+  ) => {
+    console.log("data get", pId, frndId);
+    navigate("/startChat", {
+      state: { pId: pId, frndId: frndId, pUser: pUser, fUser: fUser },
+    });
   };
 
   const data = actUser.map((user, index) => {
@@ -104,7 +112,17 @@ const ActiveUser = () => {
                 </Avatar>
               </Box>
             </Box>
-            <Text onClick={() => handleChatFun()} className={classes.userName}>
+            <Text
+              onClick={() =>
+                handleChatFun(
+                  pId,
+                  user?.pd,
+                  user?.userProfileData?.username,
+                  user?.requestData?.username
+                )
+              }
+              className={classes.userName}
+            >
               {user?.requestData?.username}
             </Text>
           </Group>
@@ -121,7 +139,17 @@ const ActiveUser = () => {
                 </Avatar>
               </Box>
             </Box>
-            <Text onClick={() => handleChatFun()} className={classes.userName}>
+            <Text
+              onClick={() =>
+                handleChatFun(
+                  user?.pd,
+                  user?.userProfileId,
+                  user?.requestData?.username,
+                  user?.userProfileData?.username
+                )
+              }
+              className={classes.userName}
+            >
               {user?.userProfileData?.username}
             </Text>
           </Group>
