@@ -37,8 +37,6 @@ const ChatDashboard = () => {
   const [getRequest, setRequest] = useState<any>([]);
   const [incomingReq, setIncomingReq] = useState<any>([]);
 
-
-
   const cards = [
     {
       title: "Start Chat",

@@ -3,9 +3,11 @@ import { ActionIcon, Box, Tooltip } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { IconCheck, IconLogout, IconX } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Logout = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
   const navigate = useNavigate();
   let pId = Number(localStorage.getItem("id"));
   const { isLoading: isLogoutLoading, mutate: logout } = useMutation<
@@ -50,27 +52,33 @@ const Logout = () => {
   };
 
   return (
-    <Box
-      style={{
-        position: "fixed",
-        bottom: 16,
-        left: 16,
-        zIndex: 1,
-      }}
-    >
-      <Tooltip label="Logout" position="right" withArrow>
-        <ActionIcon
-          loading={isLogoutLoading}
-          variant="light"
-          color="red"
-          size="xl"
-          radius="xl"
-          onClick={handleLogout}
-        >
-          <IconLogout size={22} />
-        </ActionIcon>
-      </Tooltip>
-    </Box>
+    <>
+      {currentPath == "/startChat" ? null : (
+        <>
+          <Box
+            style={{
+              position: "fixed",
+              bottom: 16,
+              left: 16,
+              zIndex: 1,
+            }}
+          >
+            <Tooltip label="Logout" position="right" withArrow>
+              <ActionIcon
+                loading={isLogoutLoading}
+                variant="light"
+                color="red"
+                size="xl"
+                radius="xl"
+                onClick={handleLogout}
+              >
+                <IconLogout size={22} />
+              </ActionIcon>
+            </Tooltip>
+          </Box>
+        </>
+      )}
+    </>
   );
 };
 

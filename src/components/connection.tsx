@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   Button,
   Group,
@@ -9,10 +8,14 @@ import {
   TextInput,
   rem,
   createStyles,
+  ActionIcon,
+  Loader,
+  Center,
 } from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
+import { IconSend, IconArrowLeft, IconHeartFilled } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import Logout from "./logout";
+import { useNavigate } from "react-router-dom";
+import { CreateWebSocketConnection } from "@/lib/Api";
 
 const useStyles = createStyles((theme) => ({
   chatWrapper: {
@@ -23,12 +26,48 @@ const useStyles = createStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     padding: rem(10),
+    position: "relative",
+    overflow: "hidden",
+
+    "::before": {
+      content: '"Best Half"',
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%) rotate(-25deg)",
+      fontSize: "18vw",
+      color: "#00000015",
+      fontWeight: 700,
+      whiteSpace: "nowrap",
+      zIndex: 0,
+      pointerEvents: "none",
+      userSelect: "none",
+    },
   },
+
+  beatingHeart: {
+    position: "absolute",
+    top: "60%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 0,
+    opacity: 0.15,
+    animation: "beat 1s infinite ease-in-out",
+    pointerEvents: "none",
+  },
+
+  "@keyframes beat": {
+    "0%": { transform: "translate(-50%, -50%) scale(1)" },
+    "50%": { transform: "translate(-50%, -50%) scale(1.2)" },
+    "100%": { transform: "translate(-50%, -50%) scale(1)" },
+  },
+
   messageBox: {
     maxWidth: "75%",
     padding: rem(10),
     borderRadius: rem(12),
     wordBreak: "break-word",
+    zIndex: 1,
   },
   fromUser: {
     backgroundColor: theme.colors.blue[1],
@@ -42,40 +81,66 @@ const useStyles = createStyles((theme) => ({
     borderTop: `1px solid ${theme.colors.gray[3]}`,
     paddingTop: rem(10),
     marginTop: rem(10),
+    zIndex: 1,
+  },
+
+  loaderScreen: {
+    height: "100vh",
+    backgroundColor: theme.colors.pink[0],
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: rem(20),
   },
 }));
 
-type Message = {
-  from: "me" | "friend";
-  text: string;
-};
-
-const dummyMessages: Message[] = [
-  { from: "me", text: "Hey, how are you?" },
-  { from: "friend", text: "I'm good! You?" },
-  { from: "me", text: "Doing great 😄" },
-  { from: "friend", text: "Let's meet this weekend." },
-];
-
-const ChatWindow = () => {
+const ChatWindow = ({ chatPerson }: any) => {
+  const pId = Number(localStorage.getItem("id"));
   const { classes, cx } = useStyles();
-  const [messages, setMessages] = useState<Message[]>(dummyMessages);
+  const [messages, setMessages] = useState<any>([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Connect to WebSocket
-    socketRef.current = new WebSocket("wss://example.com/chat");
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 4000);
 
-    socketRef.current.onmessage = (event) => {
-      try {
-        const message: Message = JSON.parse(event.data);
-        setMessages((prev) => [...prev, message]);
-      } catch (e) {
-        console.error("Invalid message:", e);
-      }
-    };
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (true) {
+      socketRef.current = CreateWebSocketConnection(
+        `/chatWindow?userId=${pId}&friendId=${chatPerson.fUser}`
+      );
+
+      socketRef.current.onopen = () => {
+        console.log("WebSocket connected ✅");
+      };
+
+      socketRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "error") {
+            console.error("⚠️ Server error:", data.error);
+            return;
+          }
+          if (Array.isArray(data)) {
+            setMessages((prev) => [...prev, ...data]);
+          } else {
+            setMessages((prev) => [...prev, data]);
+          }
+        } catch (e) {
+          console.error("Invalid JSON received:", e);
+        }
+      };
+    }
 
     return () => {
       socketRef.current?.close();
@@ -83,7 +148,6 @@ const ChatWindow = () => {
   }, []);
 
   useEffect(() => {
-    // Scroll to bottom on new message
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
@@ -91,8 +155,12 @@ const ChatWindow = () => {
 
   const sendMessage = () => {
     if (input.trim() === "") return;
-    const message: Message = { from: "me", text: input };
-    setMessages((prev) => [...prev, message]);
+
+    const message = {
+      userProfileId: pId,
+      friendId: chatPerson.fUser,
+      content: input,
+    };
 
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
@@ -101,19 +169,53 @@ const ChatWindow = () => {
     setInput("");
   };
 
+  // Show loader for 4 seconds
+  if (loading) {
+    return (
+      <Box className={classes.loaderScreen}>
+        <Loader color="pink" size="xl" />
+        <Text mt="md" size="lg" color="pink" fw={700}>
+          Connecting to your Best Half...
+        </Text>
+      </Box>
+    );
+  }
+
   return (
     <Box className={classes.chatWrapper}>
+      <IconHeartFilled
+        size={100}
+        className={classes.beatingHeart}
+        color="pink"
+      />
+
+      <ActionIcon
+        onClick={() => navigate(-1)}
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          zIndex: 2,
+          backgroundColor: "pink",
+        }}
+        size="lg"
+        radius="xl"
+        variant="filled"
+      >
+        <IconArrowLeft size={20} />
+      </ActionIcon>
+
       <ScrollArea style={{ flex: 1 }} viewportRef={scrollRef}>
         <Stack spacing="xs">
           {messages.map((msg, index) => (
             <Box
               key={index}
               className={cx(classes.messageBox, {
-                [classes.fromUser]: msg.from === "me",
-                [classes.fromFriend]: msg.from === "friend",
+                [classes.fromUser]: msg.userProfileId === pId,
+                [classes.fromFriend]: msg.userProfileId !== pId,
               })}
             >
-              <Text size="sm">{msg.text}</Text>
+              <Text size="sm">{msg.content}</Text>
             </Box>
           ))}
         </Stack>
@@ -132,8 +234,6 @@ const ChatWindow = () => {
           </Button>
         </Group>
       </Box>
-
-      <Logout />
     </Box>
   );
 };

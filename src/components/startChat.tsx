@@ -50,11 +50,19 @@ const useStyles = createStyles((theme) => ({
 const StartChat = () => {
   const { classes } = useStyles();
   const location = useLocation();
+  const currentPath = location.pathname;
   const requestData = location.state || [];
   const user = requestData?.pId;
   const fUser = requestData?.frndId;
   const username = requestData?.pUser;
   const fUsername = requestData?.fUser;
+
+  const chatPerson: any = {
+    user: requestData?.pId,
+    fUser: requestData?.frndId,
+    username: requestData?.pUser,
+    fUsername: requestData?.fUser,
+  };
 
   return (
     <Box className={classes.container}>
@@ -77,9 +85,8 @@ const StartChat = () => {
           </Text>
         </>
       ) : (
-        <ChatWindow />
+        <ChatWindow  chatPerson={chatPerson}/>
       )}
-
       <Logout />
     </Box>
   );
