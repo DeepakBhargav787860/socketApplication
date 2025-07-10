@@ -125,12 +125,12 @@ const ChatWindow = ({ chatPerson }: any) => {
 
         if (Array.isArray(data)) {
           setMessages((prev) => [...prev, ...data]);
-        } else if (data.type === "typing" && data.friendId == chatPerson.pId) {
+        } else if (data.type === "typing") {
           console.log("1");
           setIsTyping(true);
         } else if (
-          data.type === "stop_typing" &&
-          data.friendId == chatPerson.pId
+          data.type === "stop_typing" 
+         
         ) {
           console.log("2");
           setIsTyping(false);
