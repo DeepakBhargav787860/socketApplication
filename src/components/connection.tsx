@@ -28,7 +28,6 @@ const useStyles = createStyles((theme) => ({
     padding: rem(10),
     position: "relative",
     overflow: "hidden",
-
     "::before": {
       content: '"Best Half"',
       position: "absolute",
@@ -44,7 +43,6 @@ const useStyles = createStyles((theme) => ({
       userSelect: "none",
     },
   },
-
   beatingHeart: {
     position: "absolute",
     top: "60%",
@@ -55,13 +53,11 @@ const useStyles = createStyles((theme) => ({
     animation: "beat 1s infinite ease-in-out",
     pointerEvents: "none",
   },
-
   "@keyframes beat": {
     "0%": { transform: "translate(-50%, -50%) scale(1)" },
     "50%": { transform: "translate(-50%, -50%) scale(1.2)" },
     "100%": { transform: "translate(-50%, -50%) scale(1)" },
   },
-
   messageBox: {
     maxWidth: "75%",
     padding: rem(10),
@@ -83,7 +79,6 @@ const useStyles = createStyles((theme) => ({
     marginTop: rem(10),
     zIndex: 1,
   },
-
   loaderScreen: {
     height: "100vh",
     backgroundColor: theme.colors.pink[0],
@@ -101,50 +96,48 @@ const ChatWindow = ({ chatPerson }: any) => {
   const [messages, setMessages] = useState<any>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
+  const lastTypingState = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 4000);
-
+    const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (true) {
-      socketRef.current = CreateWebSocketConnection(
-        `/chatWindow?userId=${pId}&friendId=${chatPerson.fUser}`
-      );
+    socketRef.current = CreateWebSocketConnection(
+      `/chatWindow?userId=${pId}&friendId=${chatPerson.fUser}`
+    );
 
-      socketRef.current.onopen = () => {
-        console.log("WebSocket connected ✅");
-      };
+    socketRef.current.onopen = () => console.log("WebSocket connected ✅");
 
-      socketRef.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
+    socketRef.current.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
 
-          if (data.type === "error") {
-            console.error("⚠️ Server error:", data.error);
-            return;
-          }
-          if (Array.isArray(data)) {
-            setMessages((prev) => [...prev, ...data]);
-          } else {
-            setMessages((prev) => [...prev, data]);
-          }
-        } catch (e) {
-          console.error("Invalid JSON received:", e);
+        if (data.type === "error") {
+          console.error("⚠️ Server error:", data.error);
+          return;
         }
-      };
-    }
 
-    return () => {
-      socketRef.current?.close();
+        if (Array.isArray(data)) {
+          setMessages((prev) => [...prev, ...data]);
+        } else if (data.type === "typing") {
+          setIsTyping(true);
+        } else if (data.type === "stop_typing") {
+          setIsTyping(false);
+        } else {
+          setMessages((prev) => [...prev, data]);
+        }
+      } catch (e) {
+        console.error("Invalid JSON received:", e);
+      }
     };
+
+    return () => socketRef.current?.close();
   }, []);
 
   useEffect(() => {
@@ -153,10 +146,34 @@ const ChatWindow = ({ chatPerson }: any) => {
     }
   }, [messages]);
 
+  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.value;
+    setInput(value);
+
+    const isTypingNow = value.trim().length > 0;
+
+    if (
+      socketRef.current &&
+      socketRef.current.readyState === WebSocket.OPEN &&
+      isTypingNow !== lastTypingState.current
+    ) {
+      lastTypingState.current = isTypingNow;
+
+      socketRef.current.send(
+        JSON.stringify({
+          type: isTypingNow ? "typing" : "stop_typing",
+          userProfileId: pId,
+          friendId: chatPerson.fUser,
+        })
+      );
+    }
+  };
+
   const sendMessage = () => {
     if (input.trim() === "") return;
 
     const message = {
+      type: "message",
       userProfileId: pId,
       friendId: chatPerson.fUser,
       content: input,
@@ -164,12 +181,19 @@ const ChatWindow = ({ chatPerson }: any) => {
 
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
+      socketRef.current.send(
+        JSON.stringify({
+          type: "stop_typing",
+          userProfileId: pId,
+          friendId: chatPerson.fUser,
+        })
+      );
     }
 
+    lastTypingState.current = false;
     setInput("");
   };
 
-  // Show loader for 4 seconds
   if (loading) {
     return (
       <Box className={classes.loaderScreen}>
@@ -205,6 +229,14 @@ const ChatWindow = ({ chatPerson }: any) => {
         <IconArrowLeft size={20} />
       </ActionIcon>
 
+      {isTyping && (
+        <Center mb="xs">
+          <Text size="sm" color="gray">
+            Typing...
+          </Text>
+        </Center>
+      )}
+
       <ScrollArea style={{ flex: 1 }} viewportRef={scrollRef}>
         <Stack spacing="xs">
           {messages.map((msg, index) => (
@@ -226,7 +258,7 @@ const ChatWindow = ({ chatPerson }: any) => {
           <TextInput
             placeholder="Type a message..."
             value={input}
-            onChange={(e) => setInput(e.currentTarget.value)}
+            onChange={handleTyping}
             style={{ flexGrow: 1 }}
           />
           <Button color="blue" onClick={sendMessage}>
