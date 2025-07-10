@@ -125,9 +125,14 @@ const ChatWindow = ({ chatPerson }: any) => {
 
         if (Array.isArray(data)) {
           setMessages((prev) => [...prev, ...data]);
-        } else if (data.type === "typing") {
+        } else if (data.type === "typing" && data.friendId == chatPerson.pId) {
+          console.log("1");
           setIsTyping(true);
-        } else if (data.type === "stop_typing") {
+        } else if (
+          data.type === "stop_typing" &&
+          data.friendId == chatPerson.pId
+        ) {
+          console.log("2");
           setIsTyping(false);
         } else {
           setMessages((prev) => [...prev, data]);
@@ -204,7 +209,7 @@ const ChatWindow = ({ chatPerson }: any) => {
       </Box>
     );
   }
-
+  console.log("typinggggg", isTyping);
   return (
     <Box className={classes.chatWrapper}>
       <IconHeartFilled
@@ -256,7 +261,7 @@ const ChatWindow = ({ chatPerson }: any) => {
       <Box className={classes.inputArea}>
         <Group noWrap>
           <TextInput
-            placeholder="Type a message..."
+            placeholder={isTyping ? "Typing.....💍" : "Type a message..."}
             value={input}
             onChange={handleTyping}
             style={{ flexGrow: 1 }}
