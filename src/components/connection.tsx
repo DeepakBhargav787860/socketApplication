@@ -103,8 +103,8 @@ const ChatWindow = ({ chatPerson }: any) => {
   const navigate = useNavigate();
 
   //sound
-  const notificationSound = new Audio("../src/assets/hello.mp3");
-
+  // const notificationSound = new Audio("../src/assets/hello.mp3");
+const notificationSound = new Audio("https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3");
   //sound
 
   useEffect(() => {
