@@ -102,6 +102,11 @@ const ChatWindow = ({ chatPerson }: any) => {
   const lastTypingState = useRef(false);
   const navigate = useNavigate();
 
+  //sound
+  const notificationSound = new Audio("../src/assets/hello.mp3");
+
+  //sound
+
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
@@ -124,17 +129,41 @@ const ChatWindow = ({ chatPerson }: any) => {
         }
 
         if (Array.isArray(data)) {
+          if (chatPerson?.user != pId) {
+            notificationSound
+              .play()
+              .then(() => {
+                setTimeout(() => {
+                  notificationSound.pause();
+                  notificationSound.currentTime = 0; // reset to start
+                }, 2000);
+              })
+              .catch((err) => {
+                console.warn("🔇 Audio play error:", err);
+              });
+          }
           setMessages((prev) => [...prev, ...data]);
         } else if (data.type === "typing") {
           console.log("1");
           setIsTyping(true);
-        } else if (
-          data.type === "stop_typing" 
-         
-        ) {
+        } else if (data.type === "stop_typing") {
           console.log("2");
           setIsTyping(false);
         } else {
+          if (chatPerson?.user != pId) {
+            notificationSound
+              .play()
+              .then(() => {
+                setTimeout(() => {
+                  notificationSound.pause();
+                  notificationSound.currentTime = 0; // reset to start
+                }, 2000);
+              })
+              .catch((err) => {
+                console.warn("🔇 Audio play error:", err);
+              });
+          }
+
           setMessages((prev) => [...prev, data]);
         }
       } catch (e) {
