@@ -104,7 +104,9 @@ const ChatWindow = ({ chatPerson }: any) => {
 
   //sound
   // const notificationSound = new Audio("../src/assets/hello.mp3");
-const notificationSound = new Audio("https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3");
+  const notificationSound = new Audio(
+    "https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
+  );
   //sound
 
   useEffect(() => {
@@ -121,7 +123,7 @@ const notificationSound = new Audio("https://codeskulptor-demos.commondatastorag
 
     socketRef.current.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
+        const data: any = JSON.parse(event.data);
 
         if (data.type === "error") {
           console.error("⚠️ Server error:", data.error);
@@ -129,19 +131,6 @@ const notificationSound = new Audio("https://codeskulptor-demos.commondatastorag
         }
 
         if (Array.isArray(data)) {
-          if (chatPerson?.fUser == pId) {
-            notificationSound
-              .play()
-              .then(() => {
-                setTimeout(() => {
-                  notificationSound.pause();
-                  notificationSound.currentTime = 0; // reset to start
-                }, 2000);
-              })
-              .catch((err) => {
-                console.warn("🔇 Audio play error:", err);
-              });
-          }
           setMessages((prev) => [...prev, ...data]);
         } else if (data.type === "typing") {
           console.log("1");
@@ -150,7 +139,7 @@ const notificationSound = new Audio("https://codeskulptor-demos.commondatastorag
           console.log("2");
           setIsTyping(false);
         } else {
-          if (chatPerson?.fUser == pId) {
+          if (data?.friendId == pId) {
             notificationSound
               .play()
               .then(() => {
