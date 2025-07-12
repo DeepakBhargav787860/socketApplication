@@ -129,7 +129,7 @@ const notificationSound = new Audio("https://codeskulptor-demos.commondatastorag
         }
 
         if (Array.isArray(data)) {
-          if (chatPerson?.user != pId) {
+          if (chatPerson?.fUser != pId) {
             notificationSound
               .play()
               .then(() => {
@@ -150,7 +150,7 @@ const notificationSound = new Audio("https://codeskulptor-demos.commondatastorag
           console.log("2");
           setIsTyping(false);
         } else {
-          if (chatPerson?.user != pId) {
+          if (chatPerson?.fUser != pId) {
             notificationSound
               .play()
               .then(() => {
