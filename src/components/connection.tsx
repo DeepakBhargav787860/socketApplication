@@ -161,6 +161,8 @@ const ChatWindow = ({ chatPerson }: any) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const notificationSound = new Audio(
     "https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
@@ -390,38 +392,71 @@ const ChatWindow = ({ chatPerson }: any) => {
         viewportRef={scrollRef}
       >
         <Stack spacing="xs">
-          {messages.map((msg, index) => (
-            <Box
-              key={index}
-              className={cx(classes.messageBox, {
-                [classes.fromUser]: msg.userProfileId === pId,
-                [classes.fromFriend]: msg.userProfileId !== pId,
-              })}
-              style={{
-                maxWidth: "90%", // fit better on mobile
-                wordWrap: "break-word",
-              }}
-            >
-              {!IsEmptyOrZeroOrUndefined(msg.filePath) ? (
-                <Box style={{ width: "100%" }}>
-                  <audio
-                    controls
-                    style={{
-                      width: "100%",
-                      maxWidth: "100%",
-                      outline: "none",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <source src={msg.audioPath} type="audio/webm" />
-                    Your browser does not support the audio element.
-                  </audio>
-                </Box>
-              ) : (
-                <Text size="sm">{msg.content}</Text>
-              )}
-            </Box>
-          ))}
+          {messages.map((msg, index) => {
+            const isFromUser = msg.userProfileId === pId;
+            const isVoiceNote = !IsEmptyOrZeroOrUndefined(msg.filePath);
+
+            const toggleAudio = () => {
+              if (audioRef.current) {
+                if (audioRef.current.paused) {
+                  audioRef.current.play();
+                } else {
+                  audioRef.current.pause();
+                }
+              }
+            };
+
+            return (
+              <Box
+                key={index}
+                className={cx(classes.messageBox, {
+                  [classes.fromUser]: isFromUser && !isVoiceNote,
+                  [classes.fromFriend]: !isFromUser && !isVoiceNote,
+                })}
+                style={{
+                  maxWidth: "90%",
+                  wordWrap: "break-word",
+                  backgroundColor: isVoiceNote
+                    ? isFromUser
+                      ? "#d0f0c0"
+                      : "#e1e8ff"
+                    : undefined,
+                }}
+              >
+                {isVoiceNote ? (
+                  <Box style={{ width: "100%" }}>
+                    {/* Label to control play/pause */}
+                    <Text
+                      size="xs"
+                      color="blue"
+                      style={{ cursor: "pointer", marginBottom: 6 }}
+                      onClick={toggleAudio}
+                    >
+                      {isPlaying ? "⏸️ Pause" : "🔊 Play"}
+                    </Text>
+
+                    <audio
+                      ref={audioRef}
+                      style={{
+                        width: "100%",
+                        maxWidth: "100%",
+                        outline: "none",
+                        borderRadius: "8px",
+                      }}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onEnded={() => setIsPlaying(false)}
+                    >
+                      <source src={msg.filePath} type="audio/webm" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </Box>
+                ) : (
+                  <Text size="sm">{msg.content}</Text>
+                )}
+              </Box>
+            );
+          })}
         </Stack>
       </ScrollArea>
 
