@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreateWebSocketConnection } from "@/lib/Api";
 import { showNotification } from "@mantine/notifications";
+import IsEmptyOrZeroOrUndefined from "@/utils/utils";
 
 const useStyles = createStyles((theme) => ({
   chatWrapper: {
@@ -396,8 +397,29 @@ const ChatWindow = ({ chatPerson }: any) => {
                 [classes.fromUser]: msg.userProfileId === pId,
                 [classes.fromFriend]: msg.userProfileId !== pId,
               })}
+              style={{
+                maxWidth: "90%", // fit better on mobile
+                wordWrap: "break-word",
+              }}
             >
-              <Text size="sm">{msg.content}</Text>
+              {!IsEmptyOrZeroOrUndefined(msg.audioPath) ? (
+                <Box style={{ width: "100%" }}>
+                  <audio
+                    controls
+                    style={{
+                      width: "100%",
+                      maxWidth: "100%",
+                      outline: "none",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <source src={msg.audioPath} type="audio/webm" />
+                    Your browser does not support the audio element.
+                  </audio>
+                </Box>
+              ) : (
+                <Text size="sm">{msg.content}</Text>
+              )}
             </Box>
           ))}
         </Stack>
