@@ -12,10 +12,16 @@ import {
   Loader,
   Center,
 } from "@mantine/core";
-import { IconSend, IconArrowLeft, IconHeartFilled } from "@tabler/icons-react";
+import {
+  IconSend,
+  IconArrowLeft,
+  IconHeartFilled,
+  IconX,
+} from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreateWebSocketConnection } from "@/lib/Api";
+import { showNotification } from "@mantine/notifications";
 
 const useStyles = createStyles((theme) => ({
   chatWrapper: {
@@ -28,6 +34,9 @@ const useStyles = createStyles((theme) => ({
     padding: rem(10),
     position: "relative",
     overflow: "hidden",
+    "@media (max-width: 768px)": {
+      padding: rem(5),
+    },
     "::before": {
       content: '"Best Half"',
       position: "absolute",
@@ -75,9 +84,55 @@ const useStyles = createStyles((theme) => ({
   },
   inputArea: {
     borderTop: `1px solid ${theme.colors.gray[3]}`,
-    paddingTop: rem(10),
-    marginTop: rem(10),
+    paddingTop: rem(8),
+    marginTop: rem(6),
     zIndex: 1,
+  },
+  inputRow: {
+    display: "flex",
+    flexDirection: "row",
+    gap: rem(6),
+    flexWrap: "wrap",
+    alignItems: "center",
+    width: "100%",
+  },
+  textInput: {
+    flex: 1,
+    minWidth: "140px",
+  },
+  micStart: {
+    backgroundColor: "#4caf50",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "8px 14px",
+    fontSize: "14px",
+    cursor: "pointer",
+    height: "38px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    "@media (max-width: 768px)": {
+      padding: "6px 10px",
+      fontSize: "13px",
+    },
+  },
+  micStop: {
+    backgroundColor: "#f44336",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    padding: "8px 14px",
+    fontSize: "14px",
+    cursor: "pointer",
+    height: "38px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    "@media (max-width: 768px)": {
+      padding: "6px 10px",
+      fontSize: "13px",
+    },
   },
   loaderScreen: {
     height: "100vh",
@@ -102,12 +157,13 @@ const ChatWindow = ({ chatPerson }: any) => {
   const lastTypingState = useRef(false);
   const navigate = useNavigate();
 
-  //sound
-  // const notificationSound = new Audio("../src/assets/hello.mp3");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+
   const notificationSound = new Audio(
     "https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
   );
-  //sound
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2000);
@@ -133,10 +189,8 @@ const ChatWindow = ({ chatPerson }: any) => {
         if (Array.isArray(data)) {
           setMessages((prev) => [...prev, ...data]);
         } else if (data.type === "typing") {
-          console.log("1");
           setIsTyping(true);
         } else if (data.type === "stop_typing") {
-          console.log("2");
           setIsTyping(false);
         } else {
           if (data?.friendId == pId) {
@@ -145,12 +199,10 @@ const ChatWindow = ({ chatPerson }: any) => {
               .then(() => {
                 setTimeout(() => {
                   notificationSound.pause();
-                  notificationSound.currentTime = 0; // reset to start
+                  notificationSound.currentTime = 0;
                 }, 2000);
               })
-              .catch((err) => {
-                console.warn("🔇 Audio play error:", err);
-              });
+              .catch((err) => console.warn("🔇 Audio error:", err));
           }
 
           setMessages((prev) => [...prev, data]);
@@ -217,6 +269,74 @@ const ChatWindow = ({ chatPerson }: any) => {
     setInput("");
   };
 
+  const startRecording = async () => {
+    try {
+      if (!navigator.mediaDevices) {
+        showNotification({
+          title: "Mic Error",
+          message: "Microphone not supported.",
+          color: "red",
+          icon: <IconX />,
+        });
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunks.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunks.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(audioChunks.current, { type: "audio/webm" });
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          const base64Audio = reader.result?.toString().split(",")[1] || "";
+          if (!base64Audio) {
+            showNotification({
+              title: "Error",
+              message: "Empty recording not sent.",
+              color: "red",
+              icon: <IconX />,
+            });
+            return;
+          }
+
+          if (socketRef.current?.readyState === WebSocket.OPEN) {
+            socketRef.current.send(
+              JSON.stringify({
+                type: "voice",
+                userProfileId: pId,
+                friendId: chatPerson.fUser,
+                audioData: base64Audio,
+              })
+            );
+          }
+        };
+
+        reader.readAsDataURL(blob);
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (err) {
+      showNotification({
+        title: "Mic Error",
+        message: "Please allow microphone permission.",
+        color: "red",
+        icon: <IconX />,
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
   if (loading) {
     return (
       <Box className={classes.loaderScreen}>
@@ -227,7 +347,7 @@ const ChatWindow = ({ chatPerson }: any) => {
       </Box>
     );
   }
-  console.log("typinggggg", isTyping);
+
   return (
     <Box className={classes.chatWrapper}>
       <IconHeartFilled
@@ -260,7 +380,14 @@ const ChatWindow = ({ chatPerson }: any) => {
         </Center>
       )}
 
-      <ScrollArea style={{ flex: 1 }} viewportRef={scrollRef}>
+      <ScrollArea
+        style={{
+          flex: 1,
+          maxHeight: "calc(100vh - 160px)",
+          overflow: "auto",
+        }}
+        viewportRef={scrollRef}
+      >
         <Stack spacing="xs">
           {messages.map((msg, index) => (
             <Box
@@ -277,16 +404,25 @@ const ChatWindow = ({ chatPerson }: any) => {
       </ScrollArea>
 
       <Box className={classes.inputArea}>
-        <Group noWrap>
+        <Group className={classes.inputRow}>
           <TextInput
+            className={classes.textInput}
             placeholder={isTyping ? "Typing.....💍" : "Type a message..."}
             value={input}
             onChange={handleTyping}
-            style={{ flexGrow: 1 }}
           />
           <Button color="blue" onClick={sendMessage}>
             <IconSend size={18} />
           </Button>
+          {!isRecording ? (
+            <button className={classes.micStart} onClick={startRecording}>
+              🎤 Start
+            </button>
+          ) : (
+            <button className={classes.micStop} onClick={stopRecording}>
+              ⏹ Stop
+            </button>
+          )}
         </Group>
       </Box>
     </Box>
