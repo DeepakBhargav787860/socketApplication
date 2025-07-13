@@ -348,7 +348,7 @@ const ChatWindow = ({ chatPerson }: any) => {
       </Box>
     );
   }
-
+  console.log("messages", messages);
   return (
     <Box className={classes.chatWrapper}>
       <IconHeartFilled
@@ -402,7 +402,7 @@ const ChatWindow = ({ chatPerson }: any) => {
                 wordWrap: "break-word",
               }}
             >
-              {!IsEmptyOrZeroOrUndefined(msg.audioPath) ? (
+              {!IsEmptyOrZeroOrUndefined(msg.filePath) ? (
                 <Box style={{ width: "100%" }}>
                   <audio
                     controls
