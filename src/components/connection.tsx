@@ -162,7 +162,8 @@ const ChatWindow = ({ chatPerson }: any) => {
   const audioChunks = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const currentlyPlayingAudio = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const notificationSound = new Audio(
     "https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
@@ -350,7 +351,7 @@ const ChatWindow = ({ chatPerson }: any) => {
       </Box>
     );
   }
-  console.log("messages", messages);
+
   return (
     <Box className={classes.chatWrapper}>
       <IconHeartFilled
@@ -398,11 +399,21 @@ const ChatWindow = ({ chatPerson }: any) => {
 
             const toggleAudio = () => {
               if (audioRef.current) {
-                if (audioRef.current.paused) {
-                  audioRef.current.play();
-                } else {
+                if (!audioRef.current.paused) {
                   audioRef.current.pause();
+                  return;
                 }
+
+                if (
+                  currentlyPlayingAudio.current &&
+                  currentlyPlayingAudio.current !== audioRef.current
+                ) {
+                  currentlyPlayingAudio.current.pause();
+                  currentlyPlayingAudio.current.currentTime = 0;
+                }
+
+                currentlyPlayingAudio.current = audioRef.current;
+                audioRef.current.play();
               }
             };
 
@@ -425,29 +436,31 @@ const ChatWindow = ({ chatPerson }: any) => {
               >
                 {isVoiceNote ? (
                   <Box style={{ width: "100%" }}>
-                    {/* Label to control play/pause */}
                     <Text
                       size="xs"
                       color="blue"
                       style={{ cursor: "pointer", marginBottom: 6 }}
                       onClick={toggleAudio}
                     >
-                      {isPlaying ? "⏸️ Pause" : "🔊 Play"}
+                      🔊 Play / ⏸️ Pause
                     </Text>
 
                     <audio
                       ref={audioRef}
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onEnded={() => setIsPlaying(false)}
                       style={{
                         width: "100%",
                         maxWidth: "100%",
                         outline: "none",
                         borderRadius: "8px",
                       }}
-                      onPlay={() => setIsPlaying(true)}
-                      onPause={() => setIsPlaying(false)}
-                      onEnded={() => setIsPlaying(false)}
                     >
-                      <source src={msg.filePath} type="audio/webm" />
+                      <source
+                        src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
+                        type="audio/webm"
+                      />
                       Your browser does not support the audio element.
                     </audio>
                   </Box>
