@@ -161,7 +161,6 @@ const ChatWindow = ({ chatPerson }: any) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const notificationSound = new Audio(
     "https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
   );
@@ -182,10 +181,7 @@ const ChatWindow = ({ chatPerson }: any) => {
       try {
         const data: any = JSON.parse(event.data);
 
-        if (data.type === "error") {
-          console.error("⚠️ Server error:", data.error);
-          return;
-        }
+        if (data.type === "error") return;
 
         if (Array.isArray(data)) {
           setMessages((prev) => [...prev, ...data]);
@@ -195,15 +191,12 @@ const ChatWindow = ({ chatPerson }: any) => {
           setIsTyping(false);
         } else {
           if (data?.friendId == pId) {
-            notificationSound
-              .play()
-              .then(() => {
-                setTimeout(() => {
-                  notificationSound.pause();
-                  notificationSound.currentTime = 0;
-                }, 2000);
-              })
-              .catch((err) => console.warn("🔇 Audio error:", err));
+            notificationSound.play().then(() => {
+              setTimeout(() => {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+              }, 2000);
+            });
           }
 
           setMessages((prev) => [...prev, data]);
@@ -272,16 +265,6 @@ const ChatWindow = ({ chatPerson }: any) => {
 
   const startRecording = async () => {
     try {
-      if (!navigator.mediaDevices) {
-        showNotification({
-          title: "Mic Error",
-          message: "Microphone not supported.",
-          color: "red",
-          icon: <IconX />,
-        });
-        return;
-      }
-
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       audioChunks.current = [];
@@ -336,6 +319,24 @@ const ChatWindow = ({ chatPerson }: any) => {
   const stopRecording = () => {
     mediaRecorderRef.current?.stop();
     setIsRecording(false);
+  };
+
+  const toggleAudio = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
+    const audio = e.currentTarget.nextElementSibling as HTMLAudioElement;
+    if (!audio) return;
+
+    document.querySelectorAll("audio").forEach((el) => {
+      if (el !== audio) {
+        el.pause();
+        el.currentTime = 0;
+      }
+    });
+
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
   };
 
   if (loading) {
@@ -394,24 +395,6 @@ const ChatWindow = ({ chatPerson }: any) => {
             const isFromUser = msg.userProfileId === pId;
             const isVoiceNote = !IsEmptyOrZeroOrUndefined(msg.filePath);
 
-            const toggleAudio = () => {
-              if (!audioElementRef.current) return;
-
-              // Pause all other audio
-              document.querySelectorAll("audio").forEach((el) => {
-                if (el !== audioElementRef.current) {
-                  el.pause();
-                  el.currentTime = 0;
-                }
-              });
-
-              if (audioElementRef.current.paused) {
-                audioElementRef.current.play();
-              } else {
-                audioElementRef.current.pause();
-              }
-            };
-
             return (
               <Box
                 key={index}
@@ -441,12 +424,10 @@ const ChatWindow = ({ chatPerson }: any) => {
                     </Text>
 
                     <audio
-                      ref={audioElementRef}
-                      onEnded={() => {
-                        audioElementRef.current?.pause();
-                        if (audioElementRef.current) {
-                          audioElementRef.current.currentTime = 0;
-                        }
+                      onEnded={(e) => {
+                        const audio = e.currentTarget;
+                        audio.pause();
+                        audio.currentTime = 0;
                       }}
                       style={{
                         width: "100%",
