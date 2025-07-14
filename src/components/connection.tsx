@@ -145,7 +145,7 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     padding: rem(20),
   },
-    videoCallButton: {
+  videoCallButton: {
     position: "absolute",
     bottom: rem(60),
     right: rem(20),
@@ -169,7 +169,7 @@ const useStyles = createStyles((theme) => ({
       width: rem(44),
       height: rem(44),
     },
-  }
+  },
 }));
 
 const ChatWindow = ({ chatPerson }: any) => {
@@ -475,35 +475,54 @@ const ChatWindow = ({ chatPerson }: any) => {
         </Stack>
       </ScrollArea>
       {/* Video Call Button */}
-      <ActionIcon
-        className={classes.videoCallButton}
-        onClick={() => alert("📹 Video Call feature coming soon!")}
-        variant="filled"
-        size="xl"
-      >
-        <IconVideo color="white" size={24} />
-      </ActionIcon>
+
       <Box className={classes.inputArea}>
-        <Group className={classes.inputRow}>
-          <TextInput
-            className={classes.textInput}
-            placeholder={isTyping ? "Typing.....💍" : "Type a message..."}
-            value={input}
-            onChange={handleTyping}
-          />
-          <Button color="blue" onClick={sendMessage}>
-            <IconSend size={18} />
-          </Button>
-          {!isRecording ? (
-            <button className={classes.micStart} onClick={startRecording}>
-              🎤 Start
-            </button>
-          ) : (
-            <button className={classes.micStop} onClick={stopRecording}>
-              ⏹ Stop
-            </button>
-          )}
-        </Group>
+        <Stack spacing="xs">
+          {/* Text input + Send button */}
+          <Group className={classes.inputRow}>
+            <TextInput
+              className={classes.textInput}
+              placeholder={isTyping ? "Typing.....💍" : "Type a message..."}
+              value={input}
+              onChange={handleTyping}
+            />
+            <Button color="blue" onClick={sendMessage}>
+              <IconSend size={18} />
+            </Button>
+          </Group>
+
+          {/* Audio + Video Buttons */}
+          <Group
+            spacing="sm"
+            grow
+            align="center"
+            position="apart"
+            style={{ flexWrap: "wrap" }}
+          >
+            {!isRecording ? (
+              <button className={classes.micStart} onClick={startRecording}>
+                🎤 Start
+              </button>
+            ) : (
+              <button className={classes.micStop} onClick={stopRecording}>
+                ⏹ Stop
+              </button>
+            )}
+
+            <ActionIcon
+              onClick={() => navigate("/videoCall")}
+              variant="filled"
+              size="lg"
+              style={{
+                backgroundColor: "#ff69b4",
+                width: "44px",
+                height: "44px",
+              }}
+            >
+              <IconVideo color="white" size={22} />
+            </ActionIcon>
+          </Group>
+        </Stack>
       </Box>
     </Box>
   );

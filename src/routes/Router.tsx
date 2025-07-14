@@ -7,6 +7,7 @@ import RequestedUser from "@/components/RequestedUser";
 import SentRequest from "@/components/sentRequest";
 import SignPage from "@/components/signup";
 import StartChat from "@/components/startChat";
+import VideoCall from "@/components/videoCall";
 import { createBrowserRouter } from "react-router-dom";
 
 const Router = createBrowserRouter([
@@ -45,6 +46,10 @@ const Router = createBrowserRouter([
   {
     path: "/startChat",
     element: <StartChat />,
+  },
+  {
+    path: "/videoCall",
+    element: <VideoCall />,
   },
 ]);
 
