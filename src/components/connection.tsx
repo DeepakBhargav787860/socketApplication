@@ -161,10 +161,7 @@ const ChatWindow = ({ chatPerson }: any) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const currentlyPlayingAudio = useRef<HTMLAudioElement | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const notificationSound = new Audio(
     "https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
   );
@@ -398,22 +395,20 @@ const ChatWindow = ({ chatPerson }: any) => {
             const isVoiceNote = !IsEmptyOrZeroOrUndefined(msg.filePath);
 
             const toggleAudio = () => {
-              if (audioRef.current) {
-                if (!audioRef.current.paused) {
-                  audioRef.current.pause();
-                  return;
-                }
+              if (!audioElementRef.current) return;
 
-                if (
-                  currentlyPlayingAudio.current &&
-                  currentlyPlayingAudio.current !== audioRef.current
-                ) {
-                  currentlyPlayingAudio.current.pause();
-                  currentlyPlayingAudio.current.currentTime = 0;
+              // Pause all other audio
+              document.querySelectorAll("audio").forEach((el) => {
+                if (el !== audioElementRef.current) {
+                  el.pause();
+                  el.currentTime = 0;
                 }
+              });
 
-                currentlyPlayingAudio.current = audioRef.current;
-                audioRef.current.play();
+              if (audioElementRef.current.paused) {
+                audioElementRef.current.play();
+              } else {
+                audioElementRef.current.pause();
               }
             };
 
@@ -446,10 +441,11 @@ const ChatWindow = ({ chatPerson }: any) => {
                     </Text>
 
                     <audio
-                      ref={audioRef}
-                      onPlay={() => setIsPlaying(true)}
-                      onPause={() => setIsPlaying(false)}
-                      onEnded={() => setIsPlaying(false)}
+                      ref={audioElementRef}
+                      onEnded={() => {
+                        audioElementRef.current?.pause();
+                        audioElementRef.current.currentTime = 0;
+                      }}
                       style={{
                         width: "100%",
                         maxWidth: "100%",
