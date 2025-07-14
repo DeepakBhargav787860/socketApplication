@@ -444,7 +444,9 @@ const ChatWindow = ({ chatPerson }: any) => {
                       ref={audioElementRef}
                       onEnded={() => {
                         audioElementRef.current?.pause();
-                        audioElementRef.current.currentTime = 0;
+                        if (audioElementRef.current) {
+                          audioElementRef.current.currentTime = 0;
+                        }
                       }}
                       style={{
                         width: "100%",
