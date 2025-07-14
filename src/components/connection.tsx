@@ -17,6 +17,7 @@ import {
   IconArrowLeft,
   IconHeartFilled,
   IconX,
+  IconVideo,
 } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -144,6 +145,31 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     padding: rem(20),
   },
+    videoCallButton: {
+    position: "absolute",
+    bottom: rem(60),
+    right: rem(20),
+    zIndex: 0,
+    backgroundColor: "#ff69b4",
+    borderRadius: "50%",
+    width: rem(50),
+    height: rem(50),
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    cursor: "pointer",
+    transition: "transform 0.2s ease",
+    "&:hover": {
+      transform: "scale(1.1)",
+    },
+    "@media (max-width: 768px)": {
+      bottom: rem(70),
+      right: rem(10),
+      width: rem(44),
+      height: rem(44),
+    },
+  }
 }));
 
 const ChatWindow = ({ chatPerson }: any) => {
@@ -448,7 +474,15 @@ const ChatWindow = ({ chatPerson }: any) => {
           })}
         </Stack>
       </ScrollArea>
-
+      {/* Video Call Button */}
+      <ActionIcon
+        className={classes.videoCallButton}
+        onClick={() => alert("📹 Video Call feature coming soon!")}
+        variant="filled"
+        size="xl"
+      >
+        <IconVideo color="white" size={24} />
+      </ActionIcon>
       <Box className={classes.inputArea}>
         <Group className={classes.inputRow}>
           <TextInput

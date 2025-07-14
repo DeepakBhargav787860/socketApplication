@@ -25,6 +25,20 @@ export function CreateWebSocketConnection(endpoint) {
 
 
 
+
+
+
+
+
+//cloud info
+//cloud email deepak.bhargav787860@gmail.com
+ //uploadPreset := "deepak_audio"
+// cloudname-dvn5f0ho7
+// apikey-552691569815268
+// apisecret-HpqUVajwjxeRkLsrEbym3mMsQVI
+// api env variable-CLOUDINARY_URL=cloudinary://552691569815268:****@dvn5f0ho7
+
+
 axios.defaults.withCredentials=true
 // axios.defaults.withXSRFToken
 const API = axios.create({
