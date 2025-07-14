@@ -457,10 +457,7 @@ const ChatWindow = ({ chatPerson }: any) => {
                         borderRadius: "8px",
                       }}
                     >
-                      <source
-                        src="https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/theme_01.mp3"
-                        type="audio/webm"
-                      />
+                      <source src={msg.filePath} type="audio/webm" />
                       Your browser does not support the audio element.
                     </audio>
                   </Box>
