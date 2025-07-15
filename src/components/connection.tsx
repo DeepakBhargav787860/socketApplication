@@ -510,7 +510,9 @@ const ChatWindow = ({ chatPerson }: any) => {
             )}
 
             <ActionIcon
-              onClick={() => navigate("/videoCall")}
+              onClick={() =>
+                navigate("/videoCall", { state: { chatPerson: chatPerson } })
+              }
               variant="filled"
               size="lg"
               style={{

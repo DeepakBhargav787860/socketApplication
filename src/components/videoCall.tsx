@@ -1,16 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
-  Button,
-  Center,
-  Flex,
-  Group,
   Loader,
-  Stack,
   Text,
   rem,
   createStyles,
   ActionIcon,
   Tooltip,
+  Group,
 } from "@mantine/core";
 import {
   IconPhoneOff,
@@ -18,9 +15,10 @@ import {
   IconMicrophoneOff,
   IconVideo,
 } from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { CreateWebSocketConnection } from "@/lib/Api"; // Your own WebSocket utility
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(() => ({
   wrapper: {
     height: "100vh",
     width: "100vw",
@@ -81,45 +79,122 @@ const useStyles = createStyles((theme) => ({
 }));
 
 const VideoCall = () => {
+  const location = useLocation();
+  const requestData = location.state || {};
+  const userId = requestData?.chatPerson?.user;
+  const frndId = requestData?.chatPerson?.fUser;
   const { classes } = useStyles();
+
   const [loading, setLoading] = useState(true);
   const [micOn, setMicOn] = useState(true);
+  const [mediaError, setMediaError] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const ws = useRef<WebSocket | null>(null);
+  const peerConnection = useRef<RTCPeerConnection | null>(null);
+  const localStream = useRef<MediaStream | null>(null);
 
+  // WebSocket setup
   useEffect(() => {
-    // Simulate connection delay
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
+    const socket = CreateWebSocketConnection(`/vc?userId=${userId}`);
+    socket.onopen = () => {
+      socket.send(userId); // Initial handshake
+    };
+    socket.onmessage = async (message) => {
+      const { type, data } = JSON.parse(message.data);
+
+      if (type === "offer") {
+        await ensurePeer();
+        await peerConnection.current!.setRemoteDescription(
+          new RTCSessionDescription(data)
+        );
+        const answer = await peerConnection.current!.createAnswer();
+        await peerConnection.current!.setLocalDescription(answer);
+        sendSignal("answer", answer);
+      }
+
+      if (type === "answer") {
+        await peerConnection.current!.setRemoteDescription(
+          new RTCSessionDescription(data)
+        );
+      }
+
+      if (type === "ice-candidate") {
+        await peerConnection.current!.addIceCandidate(
+          new RTCIceCandidate(data)
+        );
+      }
+    };
+    ws.current = socket;
   }, []);
 
+  // Media device setup
   useEffect(() => {
-    // Dummy setup - replace with WebRTC stream setup
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then((stream) => {
+        localStream.current = stream;
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
           localVideoRef.current.play();
         }
-
-        // Simulate remote video with same stream (for demo only)
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = stream;
-          remoteVideoRef.current.play();
-        }
+        setLoading(false);
+        setMediaError(false);
+      })
+      .catch((err) => {
+        console.error("Camera/mic not found:", err);
+        setMediaError(true);
+        setLoading(false);
       });
   }, []);
 
+  const ensurePeer = async () => {
+    if (peerConnection.current) return;
+
+    const peer = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+
+    localStream.current?.getTracks().forEach((track) =>
+      peer.addTrack(track, localStream.current!)
+    );
+
+    peer.onicecandidate = (e) => {
+      if (e.candidate) sendSignal("ice-candidate", e.candidate);
+    };
+
+    peer.ontrack = (event) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+        remoteVideoRef.current.play();
+      }
+    };
+
+    peerConnection.current = peer;
+  };
+
+  const sendSignal = (type: string, data: any) => {
+    const msg = JSON.stringify({ type, data });
+    ws.current?.send(frndId.padEnd(36) + msg);
+  };
+
+  const startCall = async () => {
+    await ensurePeer();
+    const offer = await peerConnection.current!.createOffer();
+    await peerConnection.current!.setLocalDescription(offer);
+    sendSignal("offer", offer);
+  };
+
   const toggleMic = () => {
     setMicOn((prev) => !prev);
-    const stream = localVideoRef.current?.srcObject as MediaStream;
-    stream?.getAudioTracks().forEach((track) => (track.enabled = !micOn));
+    localStream.current
+      ?.getAudioTracks()
+      .forEach((track) => (track.enabled = !micOn));
   };
 
   const endCall = () => {
-    const stream = localVideoRef.current?.srcObject as MediaStream;
-    stream?.getTracks().forEach((track) => track.stop());
+    localStream.current?.getTracks().forEach((track) => track.stop());
+    peerConnection.current?.close();
     alert("Call ended.");
   };
 
@@ -134,11 +209,35 @@ const VideoCall = () => {
     );
   }
 
+  if (mediaError) {
+    return (
+      <Box className={classes.loaderWrapper}>
+        <Text color="red" size="xl" fw={700}>
+          No camera or microphone found!
+        </Text>
+        <Text color="gray" size="md" mt="sm">
+          Please connect a device and allow permissions.
+        </Text>
+      </Box>
+    );
+  }
+
   return (
     <Box className={classes.wrapper}>
       <Box className={classes.videoContainer}>
-        <video ref={remoteVideoRef} className={classes.remoteVideo} muted />
-        <video ref={localVideoRef} className={classes.localVideo} muted />
+        <video
+          ref={remoteVideoRef}
+          className={classes.remoteVideo}
+          playsInline
+          autoPlay
+        />
+        <video
+          ref={localVideoRef}
+          className={classes.localVideo}
+          muted
+          playsInline
+          autoPlay
+        />
       </Box>
 
       <Group className={classes.controls}>
@@ -150,6 +249,17 @@ const VideoCall = () => {
             onClick={toggleMic}
           >
             {micOn ? <IconMicrophone /> : <IconMicrophoneOff />}
+          </ActionIcon>
+        </Tooltip>
+
+        <Tooltip label="Start Call">
+          <ActionIcon
+            size="lg"
+            variant="filled"
+            color="blue"
+            onClick={startCall}
+          >
+            <IconVideo />
           </ActionIcon>
         </Tooltip>
 
