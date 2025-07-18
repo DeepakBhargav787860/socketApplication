@@ -210,6 +210,7 @@ const ChatWindow = ({ chatPerson }: any) => {
         if (data.type === "error") return;
 
         if (Array.isArray(data)) {
+          console.log("datachat", data);
           setMessages((prev) => [...prev, ...data]);
         } else if (data.type === "typing") {
           setIsTyping(true);
