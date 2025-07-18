@@ -44,6 +44,12 @@ const VideoCall = () => {
 
   const safeSend = (message: any) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
+      console.log("send", message);
+      console.log(
+        "socketRef.current?.readyState",
+        socketRef.current?.readyState
+      );
+      console.log("WebSocket.OPEN", WebSocket.OPEN);
       socketRef.current.send(JSON.stringify(message));
     } else {
       console.warn("Socket not open. Message not sent:", message);
@@ -187,11 +193,13 @@ const VideoCall = () => {
   };
 
   useEffect(() => {
+    console.log("1");
     const socket = CreateWebSocketConnection(`/vc?id=${userId}`);
     socketRef.current = socket;
-
+    console.log("2");
     const onSocketMessage = (msg: MessageEvent) => {
       const data = JSON.parse(msg.data);
+      console.log("3");
       if (data.type === "connection") console.log("Connection established");
       if (data.type === "offer") handleOffer(data.offer);
       if (data.type === "answer") handleAnswer(data.answer);
