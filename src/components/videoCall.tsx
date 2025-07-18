@@ -1,287 +1,217 @@
-// import { useEffect, useRef, useState } from "react";
-// import {
-//   Box,
-//   Loader,
-//   Text,
-//   rem,
-//   createStyles,
-//   ActionIcon,
-//   Tooltip,
-//   Group,
-// } from "@mantine/core";
-// import {
-//   IconPhoneOff,
-//   IconMicrophone,
-//   IconMicrophoneOff,
-//   IconVideo,
-// } from "@tabler/icons-react";
-// import { useLocation } from "react-router-dom";
-// import { CreateWebSocketConnection } from "@/lib/Api"; // Your own WebSocket utility
+import { useEffect, useRef, useState } from "react";
+import { Button, Center, Stack, Text, Loader, Group, Box } from "@mantine/core";
+import { CreateWebSocketConnection } from "@/lib/Api";
+import { useLocation } from "react-router-dom";
 
-// const useStyles = createStyles(() => ({
-//   wrapper: {
-//     height: "100vh",
-//     width: "100vw",
-//     backgroundColor: "#000",
-//     position: "relative",
-//     overflow: "hidden",
-//   },
-//   videoContainer: {
-//     flex: 1,
-//     position: "relative",
-//     overflow: "hidden",
-//   },
-//   localVideo: {
-//     position: "absolute",
-//     bottom: rem(10),
-//     right: rem(10),
-//     width: rem(120),
-//     height: rem(160),
-//     borderRadius: rem(10),
-//     objectFit: "cover",
-//     border: "2px solid #fff",
-//     "@media (max-width: 768px)": {
-//       width: rem(80),
-//       height: rem(100),
-//     },
-//   },
-//   remoteVideo: {
-//     width: "100%",
-//     height: "100%",
-//     objectFit: "cover",
-//   },
-//   controls: {
-//     position: "absolute",
-//     bottom: rem(20),
-//     left: "50%",
-//     transform: "translateX(-50%)",
-//     zIndex: 10,
-//     backgroundColor: "#ffffff20",
-//     backdropFilter: "blur(10px)",
-//     padding: rem(10),
-//     borderRadius: rem(12),
-//     display: "flex",
-//     gap: rem(12),
-//     "@media (max-width: 768px)": {
-//       bottom: rem(10),
-//       gap: rem(8),
-//     },
-//   },
-//   loaderWrapper: {
-//     height: "100%",
-//     width: "100%",
-//     backgroundColor: "#000",
-//     display: "flex",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     flexDirection: "column",
-//   },
-// }));
-
-// const VideoCall = () => {
-//   const location = useLocation();
-//   const requestData = location.state || {};
-//   const userId = requestData?.chatPerson?.user;
-//   const frndId = requestData?.chatPerson?.fUser;
-//   const { classes } = useStyles();
-
-//   const [loading, setLoading] = useState(true);
-//   const [micOn, setMicOn] = useState(true);
-//   const [mediaError, setMediaError] = useState(false);
-//   const localVideoRef = useRef<HTMLVideoElement>(null);
-//   const remoteVideoRef = useRef<HTMLVideoElement>(null);
-//   const ws = useRef<WebSocket | null>(null);
-//   const peerConnection = useRef<RTCPeerConnection | null>(null);
-//   const localStream = useRef<MediaStream | null>(null);
-
-//   // WebSocket setup
-//   useEffect(() => {
-//     console.log("a");
-//     const socket = CreateWebSocketConnection(`/vc?userId=${userId}`);
-//     socket.onopen = () => {
-//       console.log("b");
-//       socket.send(userId); // Initial handshake
-//     };
-//     socket.onmessage = async (message) => {
-//       const { type, data } = JSON.parse(message.data);
-
-//       if (type === "offer") {
-//         await ensurePeer();
-//         await peerConnection.current!.setRemoteDescription(
-//           new RTCSessionDescription(data)
-//         );
-//         const answer = await peerConnection.current!.createAnswer();
-//         await peerConnection.current!.setLocalDescription(answer);
-//         sendSignal("answer", answer);
-//       }
-
-//       if (type === "answer") {
-//         await peerConnection.current!.setRemoteDescription(
-//           new RTCSessionDescription(data)
-//         );
-//       }
-
-//       if (type === "ice-candidate") {
-//         await peerConnection.current!.addIceCandidate(
-//           new RTCIceCandidate(data)
-//         );
-//       }
-//     };
-//     ws.current = socket;
-//   }, []);
-
-//   // Media device setup
-//   useEffect(() => {
-//     navigator.mediaDevices
-//       .getUserMedia({ video: true, audio: true })
-//       .then((stream) => {
-//         localStream.current = stream;
-//         if (localVideoRef.current) {
-//           localVideoRef.current.srcObject = stream;
-//           localVideoRef.current.play();
-//         }
-//         setLoading(false);
-//         setMediaError(false);
-//       })
-//       .catch((err) => {
-//         console.error("Camera/mic not found:", err);
-//         setMediaError(true);
-//         setLoading(false);
-//       });
-//   }, []);
-
-//   const ensurePeer = async () => {
-//     if (peerConnection.current) return;
-
-//     const peer = new RTCPeerConnection({
-//       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-//     });
-
-//     localStream.current
-//       ?.getTracks()
-//       .forEach((track) => peer.addTrack(track, localStream.current!));
-
-//     peer.onicecandidate = (e) => {
-//       if (e.candidate) sendSignal("ice-candidate", e.candidate);
-//     };
-
-//     peer.ontrack = (event) => {
-//       if (remoteVideoRef.current) {
-//         remoteVideoRef.current.srcObject = event.streams[0];
-//         remoteVideoRef.current.play();
-//       }
-//     };
-
-//     peerConnection.current = peer;
-//   };
-
-//   const sendSignal = (type: string, data: any) => {
-//     const msg = JSON.stringify({ type, data });
-//     ws.current?.send(frndId.padEnd(36) + msg);
-//   };
-
-//   const startCall = async () => {
-//     await ensurePeer();
-//     const offer = await peerConnection.current!.createOffer();
-//     await peerConnection.current!.setLocalDescription(offer);
-//     sendSignal("offer", offer);
-//   };
-
-//   const toggleMic = () => {
-//     setMicOn((prev) => !prev);
-//     localStream.current
-//       ?.getAudioTracks()
-//       .forEach((track) => (track.enabled = !micOn));
-//   };
-
-//   const endCall = () => {
-//     localStream.current?.getTracks().forEach((track) => track.stop());
-//     peerConnection.current?.close();
-//     alert("Call ended.");
-//   };
-
-//   if (loading) {
-//     return (
-//       <Box className={classes.loaderWrapper}>
-//         <Loader color="pink" size="xl" />
-//         <Text mt="md" color="gray" fw={600}>
-//           Connecting your love line...
-//         </Text>
-//       </Box>
-//     );
-//   }
-
-//   if (mediaError) {
-//     return (
-//       <Box className={classes.loaderWrapper}>
-//         <Text color="red" size="xl" fw={700}>
-//           No camera or microphone found!
-//         </Text>
-//         <Text color="gray" size="md" mt="sm">
-//           Please connect a device and allow permissions.
-//         </Text>
-//       </Box>
-//     );
-//   }
-
-//   return (
-//     <Box className={classes.wrapper}>
-//       <Box className={classes.videoContainer}>
-//         <video
-//           ref={remoteVideoRef}
-//           className={classes.remoteVideo}
-//           playsInline
-//           autoPlay
-//         />
-//         <video
-//           ref={localVideoRef}
-//           className={classes.localVideo}
-//           muted
-//           playsInline
-//           autoPlay
-//         />
-//       </Box>
-
-//       <Group className={classes.controls}>
-//         <Tooltip label={micOn ? "Mute" : "Unmute"}>
-//           <ActionIcon
-//             size="lg"
-//             variant="light"
-//             color={micOn ? "green" : "red"}
-//             onClick={toggleMic}
-//           >
-//             {micOn ? <IconMicrophone /> : <IconMicrophoneOff />}
-//           </ActionIcon>
-//         </Tooltip>
-
-//         <Tooltip label="Start Call">
-//           <ActionIcon
-//             size="lg"
-//             variant="filled"
-//             color="blue"
-//             onClick={startCall}
-//           >
-//             <IconVideo />
-//           </ActionIcon>
-//         </Tooltip>
-
-//         <Tooltip label="End Call">
-//           <ActionIcon size="lg" variant="filled" color="red" onClick={endCall}>
-//             <IconPhoneOff />
-//           </ActionIcon>
-//         </Tooltip>
-//       </Group>
-//     </Box>
-//   );
-// };
-
-// export default VideoCall;
+interface VideoCallProps {
+  userId: string;
+  friendId: string;
+}
 
 const VideoCall = () => {
+  const location = useLocation();
+  const requestData = location.state || [];
+  console.log("requestedData", requestData);
+  let userId: any = requestData?.userId;
+  let friendId: any = requestData?.friendId;
+  const localVideo = useRef<HTMLVideoElement>(null);
+  const remoteVideo = useRef<HTMLVideoElement>(null);
+  const peerRef = useRef<RTCPeerConnection | null>(null);
+  const localStream = useRef<MediaStream | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
+
+  const [isCalling, setIsCalling] = useState(false);
+  const [connected, setConnected] = useState(false);
+
+  const servers = {
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  };
+
+  const safeSend = (message: any) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify(message));
+    } else {
+      console.warn("Socket not open. Message not sent:", message);
+    }
+  };
+
+  const startCall = async () => {
+    try {
+      setIsCalling(true);
+      localStream.current = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
+      if (localVideo.current) {
+        localVideo.current.srcObject = localStream.current;
+      }
+
+      peerRef.current = new RTCPeerConnection(servers);
+
+      localStream.current.getTracks().forEach((track) => {
+        peerRef.current!.addTrack(track, localStream.current!);
+      });
+
+      peerRef.current.onicecandidate = (e) => {
+        if (e.candidate) {
+          safeSend({
+            type: "ice-candidate",
+            target: friendId,
+            candidate: e.candidate,
+          });
+        }
+      };
+
+      peerRef.current.ontrack = (e) => {
+        if (remoteVideo.current) {
+          remoteVideo.current.srcObject = e.streams[0];
+        }
+      };
+
+      const offer = await peerRef.current.createOffer();
+      await peerRef.current.setLocalDescription(offer);
+
+      safeSend({
+        type: "offer",
+        target: friendId,
+        offer,
+      });
+    } catch (error) {
+      console.error("Error starting call:", error);
+      setIsCalling(false);
+    }
+  };
+
+  const handleOffer = async (offer: RTCSessionDescriptionInit) => {
+    try {
+      localStream.current = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
+      if (localVideo.current) {
+        localVideo.current.srcObject = localStream.current;
+      }
+
+      peerRef.current = new RTCPeerConnection(servers);
+
+      localStream.current.getTracks().forEach((track) => {
+        peerRef.current!.addTrack(track, localStream.current!);
+      });
+
+      peerRef.current.onicecandidate = (e) => {
+        if (e.candidate) {
+          safeSend({
+            type: "ice-candidate",
+            target: friendId,
+            candidate: e.candidate,
+          });
+        }
+      };
+
+      peerRef.current.ontrack = (e) => {
+        if (remoteVideo.current) {
+          remoteVideo.current.srcObject = e.streams[0];
+        }
+      };
+
+      await peerRef.current.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
+      const answer = await peerRef.current.createAnswer();
+      await peerRef.current.setLocalDescription(answer);
+
+      safeSend({
+        type: "answer",
+        target: friendId,
+        answer,
+      });
+    } catch (err) {
+      console.error("Error handling offer:", err);
+    }
+  };
+
+  const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
+    await peerRef.current?.setRemoteDescription(
+      new RTCSessionDescription(answer)
+    );
+  };
+
+  const handleICE = async (candidate: RTCIceCandidateInit) => {
+    try {
+      await peerRef.current?.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (err) {
+      console.error("ICE Error", err);
+    }
+  };
+
+  useEffect(() => {
+    const socket = CreateWebSocketConnection(`/vc?id=${userId}`);
+    socketRef.current = socket;
+
+    const onSocketMessage = (msg: MessageEvent) => {
+      const data = JSON.parse(msg.data);
+      if (data.type == "connection") {
+        console.log("connection stablish");
+      }
+      if (data.type === "offer") handleOffer(data.offer);
+      if (data.type === "answer") handleAnswer(data.answer);
+      if (data.type === "ice-candidate") handleICE(data.candidate);
+    };
+
+    const onOpen = () => setConnected(true);
+    const onClose = () => setConnected(false);
+
+    socket.addEventListener("message", onSocketMessage);
+    socket.addEventListener("open", onOpen);
+    socket.addEventListener("close", onClose);
+
+    return () => {
+      socket.removeEventListener("message", onSocketMessage);
+      socket.removeEventListener("open", onOpen);
+      socket.removeEventListener("close", onClose);
+      socket.close();
+    };
+  }, [userId]);
+
   return (
-    <>
-      <h1>hello</h1>
-    </>
+    <Stack spacing="md" align="center" px="md" py="lg">
+      <Text fw={600} size="lg">
+        Video Call
+      </Text>
+
+      <Group>
+        <Button onClick={startCall} disabled={!connected || isCalling}>
+          {isCalling ? "Calling..." : "Start Call"}
+        </Button>
+        {!connected && <Loader size="sm" color="red" />}
+      </Group>
+
+      <Box
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          width: "100%",
+          maxWidth: "500px",
+        }}
+      >
+        <video
+          ref={localVideo}
+          autoPlay
+          muted
+          playsInline
+          style={{ width: "100%", borderRadius: "8px" }}
+        />
+        <video
+          ref={remoteVideo}
+          autoPlay
+          playsInline
+          style={{ width: "100%", borderRadius: "8px" }}
+        />
+      </Box>
+    </Stack>
   );
 };
 
