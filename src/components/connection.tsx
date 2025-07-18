@@ -207,7 +207,10 @@ const ChatWindow = ({ chatPerson }: any) => {
       try {
         const data: any = JSON.parse(event.data);
 
-        if (data.type === "error") return;
+        if (data.type === "error") {
+          console.log("error");
+          return;
+        }
 
         if (Array.isArray(data)) {
           console.log("datachat", data);
