@@ -1,24 +1,56 @@
 import axios from 'axios';
 // for production
+// export function CreateWebSocketConnection(endpoint) {
+//   const base = "wss://mysocket-6xmu.onrender.com";
+//   const fullURL = `${base}${endpoint}`;
+//   return new WebSocket(fullURL);
+// }
 
 
 
- const url="https://mysocket-6xmu.onrender.com"  
 
-export function CreateWebSocketConnection(endpoint) {
+
+  const url="https://mysocket-6xmu.onrender.com"  
+//  const url="http://localhost:8080"
+
+
+// src/lib/Api.ts or wherever you keep API utilities
+
+export function CreateWebSocketConnection(endpoint: string): WebSocket {
   const base = "wss://mysocket-6xmu.onrender.com";
-  const fullURL = `${base}${endpoint}`;
-  return new WebSocket(fullURL);
+  // const base = "ws://localhost:8080";
+  try {
+    const fullURL = `${base}${endpoint}`;
+    const socket = new WebSocket(fullURL);
+
+    socket.onopen = () => {
+      console.log("✅ WebSocket connection opened:", fullURL);
+    };
+
+    socket.onerror = (error) => {
+      console.error("❌ WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("🔌 WebSocket connection closed:", fullURL);
+    };
+
+    return socket;
+  } catch (error) {
+    console.error("❌ Failed to create WebSocket connection:", error);
+    throw error;
+  }
 }
+
 
 
 
 
 //for local env
 
-//  const url="http://localhost:8080"
+
 //  export function CreateWebSocketConnection(endpoint) {
-//   const base = "ws://localhost:8080";
+
 //   const fullURL = `${base}${endpoint}`;
 //   return new WebSocket(fullURL);
 // }
