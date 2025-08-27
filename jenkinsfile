@@ -4,6 +4,8 @@ pipeline {
     stages {
         stage('Debug Branch') {
             steps {
+           git branch: 'main', url: 'https://github.com/DeepakBhargav787860/socketApplication.git'
+
                 echo "Branch name: ${env.BRANCH_NAME}"
             }
         }
