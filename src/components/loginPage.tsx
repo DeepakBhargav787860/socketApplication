@@ -196,7 +196,7 @@ const LoginPage = () => {
                   fontWeight: 600,
                 }}
               >
-                Login
+                Login Chat App
               </Button>
               <Button
                 onClick={() => navigate("/signUp")}
