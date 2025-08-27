@@ -196,7 +196,7 @@ const LoginPage = () => {
                   fontWeight: 600,
                 }}
               >
-                Login
+                Login Shell
               </Button>
               <Button
                 onClick={() => navigate("/signUp")}
