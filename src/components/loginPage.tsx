@@ -158,7 +158,7 @@ const LoginPage = () => {
       >
         <Stack spacing="md">
           <Title order={2} align="center" style={{ color: "#333" }}>
-            JaliTalks 👋
+            hello users
           </Title>
           <Text align="center" size="sm" color="dimmed">
             Login to your account
