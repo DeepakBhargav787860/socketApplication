@@ -1,19 +1,24 @@
-FROM node:18.17.1-alpine3.18 as builder
+# Stage 1: Build the React app
+FROM node:18 AS builder
 
 WORKDIR /app
-COPY . ./
-RUN npm install --legacy-peer-deps && npm run build
-# EXPOSE 80
-# EXPOSE 443
-#FROM nginx:1.24-alpine3.17
-FROM nginx:1.25.1-alpine-slim
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Stage 2: Serve with NGINX
+FROM nginx:stable-alpine
+
+# Remove default NGINX static files
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy built React app from previous stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Optional: Replace default NGINX config (if needed)
+ COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
-
-#npm i react-transliterate --legacy-peer-deps
-#npm install --legacy-peer-deps
-
-#1.25.1-alpine-slim
